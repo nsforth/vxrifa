@@ -1,8 +1,8 @@
-This library introduces concept of asynchronous object-oriented programming 'by contract'.<p>
+This library introduces concept of asynchronous object-oriented programming 'by contract' in Vert.X.<br>
 Usually if you want to send message in Vert.X from one Actor(Verticle) to other you need to use <tt>eventBus.send</tt> or <tt>eventBus.publish</tt> with some object as payload.
 Objects should be some sort of simple types like <tt>String</tt>,<tt>Integer</tt> or special objects like <tt>JsonObject</tt>.
 Of course you can register own 'codec' and send anything you want but type checking on receiving side is a developer responsibility.
-You should also write boiler plate for message handlers and handler registering.<p>
+You should also write boiler plate for message handlers and handler registering.<br>
 VxRifa library implements Java-idiomatic style for actors messaging based on Interfaces. 
 ## How to use library
 Any interface can be annotated with <tt>@VxRifa</tt>. Methods should return void or <tt>io.vertx.core.Future</tt>.
