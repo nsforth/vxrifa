@@ -16,26 +16,21 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package io.vxrifa;
+package io.github.nsforth.vxrifa;
+
+import io.vertx.core.Future;
 
 /**
- * 
+ * Implementor of that class can register some interface annotated with {@link VxRifa} or {@link VxRifaPublish}.
+ * After registration vertx consumers accepts messages from eventBus and calls methods of receiver.
+ * You can ask {@link #unregisterReceiver} whenever you want. Of course when verticle that calls {@link #registerReceiver} stopped consumers unregistered automatically.
  * @author Nikita Staroverov
+ * @param <R> Interface type for receiver generation
  */
-public final class RIFAMessage {
+public interface VxRifaReceiver<R> {
     
-    private final Object[] payload;
-
-    private RIFAMessage(final Object... payload) {
-        this.payload = payload;
-    }
+    Future<?> registerReceiver(R receiver);
     
-    public Object get(int index) {
-        return payload[index];
-    }
-    
-    public static RIFAMessage of(final Object... payload) {
-        return new RIFAMessage(payload);
-    }
+    Future<?> unregisterReceiver();
     
 }

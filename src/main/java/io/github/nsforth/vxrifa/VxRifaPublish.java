@@ -16,21 +16,19 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package io.vxrifa;
+package io.github.nsforth.vxrifa;
 
-import io.vertx.core.Future;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Implementor of that class can register some interface annotated with {@link VxRifa} or {@link VxRifaPublish}.
- * After registration vertx consumers accepts messages from eventBus and calls methods of receiver.
- * You can ask {@link #unregisterReceiver} whenever you want. Of course when verticle that calls {@link #registerReceiver} stopped consumers unregistered automatically.
+ * Same as {@link VxRifa} but define publish/subscribe scheme so methods that returns something other than void is not allowed.
  * @author Nikita Staroverov
- * @param <R> Interface type for receiver generation
  */
-public interface VxRifaReceiver<R> {
-    
-    Future<?> registerReceiver(R receiver);
-    
-    Future<?> unregisterReceiver();
+@Retention(RetentionPolicy.SOURCE)
+@Target(ElementType.TYPE)
+public @interface VxRifaPublish {
     
 }

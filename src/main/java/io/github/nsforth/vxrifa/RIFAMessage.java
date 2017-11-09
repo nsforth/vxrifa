@@ -16,19 +16,26 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package io.vxrifa;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+package io.github.nsforth.vxrifa;
 
 /**
- * Same as {@link VxRifa} but define publish/subscribe scheme so methods that returns something other than void is not allowed.
+ * 
  * @author Nikita Staroverov
  */
-@Retention(RetentionPolicy.SOURCE)
-@Target(ElementType.TYPE)
-public @interface VxRifaPublish {
+public final class RIFAMessage {
+    
+    private final Object[] payload;
+
+    private RIFAMessage(final Object... payload) {
+        this.payload = payload;
+    }
+    
+    public Object get(int index) {
+        return payload[index];
+    }
+    
+    public static RIFAMessage of(final Object... payload) {
+        return new RIFAMessage(payload);
+    }
     
 }
