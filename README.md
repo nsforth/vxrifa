@@ -1,4 +1,3 @@
-# VxRIFA - Vert.X Rich Interfaces For Actors
 This library introduces concept of asynchronous object-oriented programming 'by contract'.<p>
 Usually if you want to send message in Vert.X from one Actor(Verticle) to other you need to use <tt>eventBus.send</tt> or <tt>eventBus.publish</tt> with some object as payload.
 Objects should be some sort of simple types like <tt>String</tt>,<tt>Integer</tt> or special objects like <tt>JsonObject</tt>.
