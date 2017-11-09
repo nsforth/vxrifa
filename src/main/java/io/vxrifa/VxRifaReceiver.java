@@ -24,8 +24,8 @@ import io.vertx.core.Future;
  * Implementor of that class can register some interface annotated with {@link VxRifa} or {@link VxRifaPublish}.
  * After registration vertx consumers accepts messages from eventBus and calls methods of receiver.
  * You can ask {@link #unregisterReceiver} whenever you want. Of course when verticle that calls {@link #registerReceiver} stopped consumers unregistered automatically.
- * @author Nikita Staroverov <nsforth@gmail.com>
- * @param <R>
+ * @author Nikita Staroverov
+ * @param <R> Interface type for receiver generation
  */
 public interface VxRifaReceiver<R> {
     

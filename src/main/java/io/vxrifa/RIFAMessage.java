@@ -20,7 +20,7 @@ package io.vxrifa;
 
 /**
  * 
- * @author Nikita Staroverov <nsforth@gmail.com>
+ * @author Nikita Staroverov
  */
 public final class RIFAMessage {
     

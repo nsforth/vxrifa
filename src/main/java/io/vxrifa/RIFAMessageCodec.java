@@ -23,7 +23,7 @@ import io.vertx.core.eventbus.MessageCodec;
 
 /**
  *
- * @author Nikita Staroverov <nsforth@gmail.com>
+ * @author Nikita Staroverov
  */
 class RIFAMessageCodec implements MessageCodec<RIFAMessage, RIFAMessage>{
 

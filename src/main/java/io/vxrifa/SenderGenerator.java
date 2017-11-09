@@ -41,7 +41,7 @@ import javax.tools.Diagnostic;
 
 /**
  * Generates implementation for interface annotated with {@link VxRifa}. Generated implementation wraps method's params to {@link RIFAMessage} and sends message by eventBus.
- * @author Nikita Staroverov <nsforth@gmail.com>
+ * @author Nikita Staroverov
  */
 class SenderGenerator {
 

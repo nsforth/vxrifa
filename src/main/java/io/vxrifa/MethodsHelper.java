@@ -26,7 +26,7 @@ import javax.lang.model.element.VariableElement;
 
 /**
  *
- * @author Nikita Staroverov <nsforth@gmail.com>
+ * @author Nikita Staroverov
  */
 class MethodsHelper {
 

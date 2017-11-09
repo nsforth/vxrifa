@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
 
 /**
  * Same as {@link VxRifa} but define publish/subscribe scheme so methods that returns something other than void is not allowed.
- * @author Nikita Staroverov <nsforth@gmail.com>
+ * @author Nikita Staroverov
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)

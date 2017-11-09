@@ -35,7 +35,7 @@ import javax.tools.Diagnostic;
 
 /**
  *
- * @author Nikita Staroverov <nsforth@gmail.com>
+ * @author Nikita Staroverov
  */
 class PublisherGenerator {
 

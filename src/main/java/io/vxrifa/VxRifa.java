@@ -74,12 +74,12 @@ import java.lang.annotation.Target;
  * 
  * Calculator calc_impl = new CalculatorImpl();
  * VxRifaReceiver&lt;Calculator&gt; registrator = VxRifaUtil.getReceiverRegistrator(vertx, Calculator.class);
- * Future<?> when_registered = registrator.registerReceiver(calc_impl);
+ * Future&lt;?&gt; when_registered = registrator.registerReceiver(calc_impl);
  * 
  * .... Some other verticles that wants to use Calculator API ....
  * 
  * Calculator calc = VxRifaUtil.getSenderByInterface(vertx, Calculator.class);
- * calc.sumTwoDoubles(1.0, 2.0).setHandler(result -> {
+ * calc.sumTwoDoubles(1.0, 2.0).setHandler(result -&gt; {
  *      if (result.succeeded()) {
  *          Double sum = result.result();
  *      }
@@ -91,7 +91,7 @@ import java.lang.annotation.Target;
  * You should also remember that any parameters and returned objects should be immutable(effectively immutable) or at least thread-safe.<br>
  * Currently messaging by VxRifa only possible for local non-clustered Vert.X instances because RIFAMessageCodec not supported network encoding/decoding of objects.
  * I hope to solve that in near future.
- * @author Nikita Staroverov <nsforth@gmail.com>
+ * @author Nikita Staroverov
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)

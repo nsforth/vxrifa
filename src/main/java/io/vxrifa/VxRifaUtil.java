@@ -23,13 +23,13 @@ import java.lang.reflect.InvocationTargetException;
 
 /**
  *
- * @author Nikita Staroverov <nsforth@gmail.com>
+ * @author Nikita Staroverov
  */
 public class VxRifaUtil {
     
     /**
      * Should be called once per Vertx instance before use other methods from {@link VxRifaUtil}
-     * @param vertx 
+     * @param vertx Vertx instance
      */
     public static void registerRIFACodec(Vertx vertx) {
         vertx.eventBus().registerDefaultCodec(RIFAMessage.class, new RIFAMessageCodec());
@@ -40,8 +40,8 @@ public class VxRifaUtil {
      * Interface should be annotated with {@link VxRifa}.
      * @param <I> Some interface which methods should be wrapped to eventBus messages.
      * @param vertx VertX instance
-     * @param interfaceType 
-     * @return
+     * @param interfaceType Class for which implementation should be generated
+     * @return Generated sender implementation
      */
     public static <I> I getSenderByInterface(Vertx vertx, Class<I> interfaceType) {
         return instantiateSenderImplementation(vertx, interfaceType, null);
@@ -50,11 +50,11 @@ public class VxRifaUtil {
     /**
      * Same as {@link #getSenderByInterface(io.vertx.core.Vertx, java.lang.Class)} but with possibility to choose other eventBus address.
      * It may be useful when you want to use more than one receivers independent of each other.
-     * @param <I>
-     * @param vertx
-     * @param interfaceType
-     * @param eventBusAddress
-     * @return 
+     * @param <I> Interface
+     * @param vertx Vertx instance
+     * @param interfaceType Class for which implementation should be generated
+     * @param eventBusAddress Alternate eventBus address, by default address came from interface FQN
+     * @return Generated sender implementation
      */
     public static <I> I getSenderByInterface(Vertx vertx, Class<I> interfaceType, String eventBusAddress) {        
         return instantiateSenderImplementation(vertx, interfaceType, eventBusAddress);
@@ -82,10 +82,10 @@ public class VxRifaUtil {
     
     /**
      * Same as {@link #getSenderByInterface(io.vertx.core.Vertx, java.lang.Class)} but returns implementation with broadcast eventBus messages like Vertx.eventBus.publish works.
-     * @param <I>
-     * @param vertx
-     * @param interfaceType
-     * @return 
+     * @param <I> Interface
+     * @param vertx Vertx instance
+     * @param interfaceType Class for which implementation should be generated
+     * @return Generated publisher implementation
      */
     public static <I> I getPublisherByInterface(Vertx vertx, Class<I> interfaceType) {
         return instantiatePublisherImplementation(vertx, interfaceType, null);
@@ -94,11 +94,11 @@ public class VxRifaUtil {
     /**
      * Same as {@link #getSenderByInterface(io.vertx.core.Vertx, java.lang.Class, java.lang.String)} but returns implementation with broadcast eventBus messages like Vertx.eventBus.publish works.
      * It may be useful when you want to use more than one receivers independent of each other.
-     * @param <I>
-     * @param vertx
-     * @param interfaceType
-     * @param eventBusAddress
-     * @return 
+     * @param <I> Interface
+     * @param vertx Vertx instance
+     * @param interfaceType Class for which implementation should be generated
+     * @param eventBusAddress Alternate eventBus address, by default address came from interface FQN
+     * @return Generated publisher implementation
      */
     public static <I> I getPublisherByInterface(Vertx vertx, Class<I> interfaceType, String eventBusAddress) {        
         return instantiatePublisherImplementation(vertx, interfaceType, eventBusAddress);
@@ -127,10 +127,10 @@ public class VxRifaUtil {
     /**
      * Returns object that can register consumer side. Implementation that you get from {@link #getSenderByInterface} or {@link #getPublisherByInterface }
      * sends messages to object registered by {@link VxRifaReceiver}.
-     * @param <I>
-     * @param vertx
-     * @param interfaceType
-     * @return 
+     * @param <I> Interface
+     * @param vertx Vertx instance
+     * @param interfaceType Class for which receiver should be generated
+     * @return Generated receiver for registering of your consumer interface implementation
      */
     public static <I> VxRifaReceiver<I> getReceiverRegistrator(Vertx vertx, Class<I> interfaceType) {
         return instantiateReceiverRegistrator(vertx, interfaceType, null);
@@ -138,11 +138,11 @@ public class VxRifaUtil {
     
     /**
      * Same as {@link #getReceiverRegistrator(io.vertx.core.Vertx, java.lang.Class) } but you can redefine eventBus address.     
-     * @param <I>
-     * @param vertx
-     * @param interfaceType
-     * @param eventBusAddress
-     * @return 
+     * @param <I> Interface
+     * @param vertx Vertx instance
+     * @param interfaceType Class for which receiver should be generated
+     * @param eventBusAddress Alternate eventBus address, by default address came from interface FQN
+     * @return Generated receiver for registering of your consumer interface implementation
      */
     public static <I> VxRifaReceiver<I> getReceiverRegistrator(Vertx vertx, Class<I> interfaceType, String eventBusAddress) {
         return instantiateReceiverRegistrator(vertx, interfaceType, eventBusAddress);

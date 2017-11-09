@@ -45,7 +45,7 @@ import javax.lang.model.type.TypeKind;
 
 /**
  * Generates delegate class that do mapping between vertx.consumer handler and some class that implements interface annotated with {@link VxRifa} or {@link VxRifaPublish}
- * @author Nikita Staroverov <nsforth@gmail.com>
+ * @author Nikita Staroverov
  */
 class ReceiverGenerator {
 

@@ -39,7 +39,7 @@ import javax.tools.Diagnostic;
 
 /**
  * 
- * @author Nikita Staroverov <nsforth@gmail.com>
+ * @author Nikita Staroverov
  */
 public class VxRifaAnnotationProcessor extends AbstractProcessor {
 
