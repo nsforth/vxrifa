@@ -1,10 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>io.vxrifa</groupId>
-    <artifactId>VxRifa</artifactId>
+    <groupId>io.github.nsforth</groupId>
+    <artifactId>vxrifa</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
+    <name>VxRifa</name>
+    <description>Object-oriented reactive programming for Vert.X</description>
+    <url>https://github.com/nsforth/vxrifa</url>
+    <licenses>
+        <license>
+            <name>GNU Lesser General Public License, version 2.1</name>
+            <url>https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <scm>
+        <url>https://github.com/nsforth/vxrifa</url>
+        <connection>scm:git:https://github.com/nsforth/vxrifa.git</connection>
+    </scm>
+    <developers>
+        <developer>
+            <id>nsforth</id>
+            <name>Nikita Staroverov</name>
+            <email>nsforth@gmail.com</email>
+            <timezone>UTC+3</timezone>
+        </developer>
+    </developers>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
