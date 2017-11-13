@@ -123,6 +123,10 @@ class ReceiverGenerator {
                 if (method.isDefault()) {
                     continue;
                 }
+                
+                if (method.getModifiers().contains(Modifier.STATIC)) {
+                    continue;
+                }
 
                 MethodsHelper methodsHelper = new MethodsHelper(method);
 

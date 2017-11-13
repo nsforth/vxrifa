@@ -106,6 +106,10 @@ class SenderGenerator {
                 if (method.isDefault()) {
                     continue;
                 }
+                
+                if (method.getModifiers().contains(Modifier.STATIC)) {
+                    continue;
+                }
 
                 TypeMirror returnType = method.getReturnType();
 
