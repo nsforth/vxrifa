@@ -18,6 +18,7 @@
  */
 package io.github.nsforth.vxrifa;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import java.lang.reflect.InvocationTargetException;
 
@@ -42,8 +43,9 @@ public class VxRifaUtil {
      * @param vertx VertX instance
      * @param interfaceType Class for which implementation should be generated
      * @return Generated sender implementation
+     * @throws IllegalArgumentException when sender instance could not be instantiated
      */
-    public static <I> I getSenderByInterface(Vertx vertx, Class<I> interfaceType) {
+    public static <I> I getSenderByInterface(Vertx vertx, Class<I> interfaceType) throws IllegalArgumentException {
         return instantiateSenderImplementation(vertx, interfaceType, null);
     }
     
@@ -55,8 +57,9 @@ public class VxRifaUtil {
      * @param interfaceType Class for which implementation should be generated
      * @param eventBusAddress Alternate eventBus address, by default address came from interface FQN
      * @return Generated sender implementation
+     * @throws IllegalArgumentException when sender instance could not be instantiated
      */
-    public static <I> I getSenderByInterface(Vertx vertx, Class<I> interfaceType, String eventBusAddress) {        
+    public static <I> I getSenderByInterface(Vertx vertx, Class<I> interfaceType, String eventBusAddress) throws IllegalArgumentException {        
         return instantiateSenderImplementation(vertx, interfaceType, eventBusAddress);
     }
     
@@ -86,8 +89,9 @@ public class VxRifaUtil {
      * @param vertx Vertx instance
      * @param interfaceType Class for which implementation should be generated
      * @return Generated publisher implementation
+     * @throws IllegalArgumentException when publisher instance could not be instantiated
      */
-    public static <I> I getPublisherByInterface(Vertx vertx, Class<I> interfaceType) {
+    public static <I> I getPublisherByInterface(Vertx vertx, Class<I> interfaceType) throws IllegalArgumentException {
         return instantiatePublisherImplementation(vertx, interfaceType, null);
     }
     
@@ -99,21 +103,22 @@ public class VxRifaUtil {
      * @param interfaceType Class for which implementation should be generated
      * @param eventBusAddress Alternate eventBus address, by default address came from interface FQN
      * @return Generated publisher implementation
+     * @throws IllegalArgumentException when publisher instance could not be instantiated
      */
-    public static <I> I getPublisherByInterface(Vertx vertx, Class<I> interfaceType, String eventBusAddress) {        
+    public static <I> I getPublisherByInterface(Vertx vertx, Class<I> interfaceType, String eventBusAddress) throws IllegalArgumentException {        
         return instantiatePublisherImplementation(vertx, interfaceType, eventBusAddress);
     }
     
     private static <I> I instantiatePublisherImplementation(Vertx vertx, Class<I> interfaceType, String eventBusAddress) {
         assert interfaceType.isInterface();        
         try {
-            Class<?> senderClass = ClassLoader.getSystemClassLoader().loadClass(interfaceType.getCanonicalName() + PublisherGenerator.VXRIFA_PUBLISHER_SUFFIX);
+            Class<?> publisherClass = ClassLoader.getSystemClassLoader().loadClass(interfaceType.getCanonicalName() + PublisherGenerator.VXRIFA_PUBLISHER_SUFFIX);
             try {                                
                 I newInstance;
                 if (eventBusAddress == null) {
-                    newInstance = (I) senderClass.getDeclaredConstructor(Vertx.class).newInstance(vertx);
+                    newInstance = (I) publisherClass.getDeclaredConstructor(Vertx.class).newInstance(vertx);
                 } else {
-                    newInstance = (I) senderClass.getDeclaredConstructor(Vertx.class, String.class).newInstance(vertx, eventBusAddress);
+                    newInstance = (I) publisherClass.getDeclaredConstructor(Vertx.class, String.class).newInstance(vertx, eventBusAddress);
                 }
                 return newInstance;
             } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
@@ -137,6 +142,29 @@ public class VxRifaUtil {
     }
     
     /**
+     * Same as {@link #getReceiverRegistrator} but tries to register receiver and returns future with it
+     * @param <I> Interface
+     * @param vertx Vertx instance
+     * @param interfaceType Class for which receiver should be generated
+     * @param receiver Interface implementation that should be registered
+     * @return Future that on completion returns successfully registered {@link VxRifaReceiver} and fails otherwise
+     */
+    public static <I> Future<VxRifaReceiver<I>> registerReceiver(Vertx vertx, Class<I> interfaceType, I receiver) {
+        Future<VxRifaReceiver<I>> future = Future.future();
+        
+        VxRifaReceiver<I> receiverRegistrator = getReceiverRegistrator(vertx, interfaceType);
+        receiverRegistrator.registerReceiver(receiver).setHandler(complete -> {
+            if (complete.succeeded()) {
+                future.complete(receiverRegistrator);
+            } else {
+                future.fail(complete.cause());
+            }
+        });
+        
+        return future;
+    }
+    
+    /**
      * Same as {@link #getReceiverRegistrator(io.vertx.core.Vertx, java.lang.Class) } but you can redefine eventBus address.     
      * @param <I> Interface
      * @param vertx Vertx instance
@@ -146,6 +174,30 @@ public class VxRifaUtil {
      */
     public static <I> VxRifaReceiver<I> getReceiverRegistrator(Vertx vertx, Class<I> interfaceType, String eventBusAddress) {
         return instantiateReceiverRegistrator(vertx, interfaceType, eventBusAddress);
+    }
+    
+    /**
+     * Same as {@link #registerReceiver}  but with possibility to choose alternate eventBus address
+     * @param <I> Interface
+     * @param vertx Vertx instance
+     * @param interfaceType Class for which receiver should be generated
+     * @param receiver Interface implementation that should be registered
+     * @param eventBusAddress Alternate eventBus address, by default address came from interface FQN
+     * @return Future that on completion returns successfully registered {@link VxRifaReceiver} and fails otherwise
+     */
+    public static <I> Future<VxRifaReceiver<I>> registerReceiver(Vertx vertx, Class<I> interfaceType, I receiver, String eventBusAddress) {
+        Future<VxRifaReceiver<I>> future = Future.future();
+        
+        VxRifaReceiver<I> receiverRegistrator = getReceiverRegistrator(vertx, interfaceType, eventBusAddress);
+        receiverRegistrator.registerReceiver(receiver).setHandler(complete -> {
+            if (complete.succeeded()) {
+                future.complete(receiverRegistrator);
+            } else {
+                future.fail(complete.cause());
+            }
+        });
+        
+        return future;
     }
     
     private static <I> VxRifaReceiver<I> instantiateReceiverRegistrator(Vertx vertx, Class<I> interfaceType, String eventBusAddress) {

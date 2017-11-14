@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.processing.Messager;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -116,17 +115,9 @@ class ReceiverGenerator {
         
         for (Element enclosedElement : interfaceElement.getEnclosedElements()) {
 
-            if (enclosedElement.getKind() == ElementKind.METHOD) {
+            if (GeneratorsHelper.isElementSuitableMethod(enclosedElement)) {
 
                 ExecutableElement method = (ExecutableElement) enclosedElement;
-
-                if (method.isDefault()) {
-                    continue;
-                }
-                
-                if (method.getModifiers().contains(Modifier.STATIC)) {
-                    continue;
-                }
 
                 MethodsHelper methodsHelper = new MethodsHelper(method);
 
