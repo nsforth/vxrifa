@@ -27,7 +27,6 @@ import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import com.squareup.javapoet.TypeVariableName;
-import io.vertx.core.Future;
 import java.text.MessageFormat;
 import javax.annotation.processing.Messager;
 import javax.lang.model.element.Element;
@@ -103,8 +102,6 @@ class SenderGenerator {
                 ExecutableElement method = (ExecutableElement) enclosedElement;
 
                 TypeMirror returnType = method.getReturnType();
-
-                messager.printMessage(Diagnostic.Kind.NOTE, MessageFormat.format("Returns: {0} but should {1}", returnType.toString(), Future.class.getCanonicalName()));
 
                 if (!(returnType.toString().startsWith(io.vertx.core.Future.class.getCanonicalName()) || returnType.getKind() == TypeKind.VOID)) {
 
