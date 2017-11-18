@@ -6,7 +6,7 @@ Of course you can register own 'codec' and send anything you want but type check
 You should also write boiler plate for message handlers and handler registering.<br>
 VxRifa library implements Java-idiomatic style for actors messaging based on Interfaces. 
 ## Getting started
-If you are using Maven or Gradle, add the following dependency to the dependencies section of your project descriptor to access the VxRifa:
+If you are using Maven or Gradle, add the following dependency to the dependencies section of your project descriptor to access the VxRifa:<br>
 Maven (in your pom.xml):
 ```
 <dependency>
