@@ -1,12 +1,28 @@
+## Vert.X RIFA - Rich Interfaces For Actors 
 This library introduces concept of asynchronous object-oriented programming 'by contract' in Vert.X.<br>
 Usually if you want to send message in Vert.X from one Actor(Verticle) to other you need to use <tt>eventBus.send</tt> or <tt>eventBus.publish</tt> with some object as payload.
 Objects should be some sort of simple types like <tt>String</tt>,<tt>Integer</tt> or special objects like <tt>JsonObject</tt>.
 Of course you can register own 'codec' and send anything you want but type checking on receiving side is a developer responsibility.
 You should also write boiler plate for message handlers and handler registering.<br>
 VxRifa library implements Java-idiomatic style for actors messaging based on Interfaces. 
-## How to use library
+## Getting started
+If you are using Maven or Gradle, add the following dependency to the dependencies section of your project descriptor to access the VxRifa:
+Maven (in your pom.xml):
+```
+<dependency>
+  <groupId>io.github.nsforth</groupId>
+  <artifactId>vxrifa</artifactId>
+  <version>1.1.0</version>
+</dependency>
+```
+Gradle (in your gradle build.xml):
+```
+dependencies {
+  compile 'io.github.nsforth:vxrifa:1.1.0'
+}
+```
 Any interface can be annotated with <tt>@VxRifa</tt>. Methods should return void or <tt>io.vertx.core.Future</tt>.
-Whenever java compiler processes annotations (when building project or on the fly in modern IDEs) VxRifa generates special classes that do all work.
+Whenever java compiler processes annotations (when building project or on the fly in modern IDEs) VxRifa generates special classes that do all work. You can see generated code under <tt>target/generated-sources</tt> with maven or under <tt>build</tt> directory with gradle.
 For example:
 ```java
 @VxRifa
@@ -38,7 +54,7 @@ public class CalculatorImpl implements Calculator {
 
 }
 ```
-Now you can get <tt>VxRifaReceiver</tt> with <tt>VxRifaUtil.getReceiverRegistrator</tt>
+Now you can get instance of <tt>VxRifaReceiver</tt> with <tt>VxRifaUtil.getReceiverRegistrator</tt>
 which creates any needed eventBus.consumer's and calls methods of <tt>Calculator</tt> whenever it receives messages from other actors.<br>
 Other Verticles should use <tt>VxRifaUtil.getSenderByInterface</tt> that returns VxRifa-driven implementation of Calculator which send messages under the hood.
 For example:
