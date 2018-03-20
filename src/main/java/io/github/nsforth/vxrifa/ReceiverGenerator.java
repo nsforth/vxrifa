@@ -133,7 +133,7 @@ class ReceiverGenerator {
         // Generates cosumers waiting Future for success registration
         registerMB.addStatement("return $T.all($N.stream().map((consumer) -> {"
                         + "$T future = $T.future();"
-                        + "consumer.completionHandler(future);"
+                        + "consumer.completionHandler(future.completer());"
                         + "return future;"                       
                         + "}).collect($T.toList()))",
                         CompositeFuture.class,
@@ -158,7 +158,7 @@ class ReceiverGenerator {
                 .addModifiers(Modifier.PUBLIC)
                 .addStatement("return $T.all($N.stream().map((consumer) -> {"
                         + "$T future = $T.future();"
-                        + "consumer.unregister(future);"
+                        + "consumer.unregister(future.completer());"
                         + "return future;"                       
                         + "}).collect($T.toList()))",
                         CompositeFuture.class,
