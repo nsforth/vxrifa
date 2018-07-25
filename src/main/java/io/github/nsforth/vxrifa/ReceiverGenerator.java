@@ -41,6 +41,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.Elements;
 
 /**
  * Generates delegate class that do mapping between vertx.consumer handler and some class that implements interface annotated with {@link VxRifa} or {@link VxRifaPublish}
@@ -52,15 +53,17 @@ class ReceiverGenerator {
 
     private final Messager messager;
     private final TypeElement interfaceElement;
+    private final Elements elements;
 
     private FieldSpec vertxField;
     private FieldSpec eventBusAddressField;
     private FieldSpec consumersField;
     private TypeSpec.Builder tsb;        
 
-    ReceiverGenerator(Messager messager, TypeElement interfaceElement) {
+    ReceiverGenerator(Messager messager, TypeElement interfaceElement, Elements elements) {
         this.messager = messager;
         this.interfaceElement = interfaceElement;
+        this.elements = elements;
     }
 
     ReceiverGenerator generateInitializing() {
@@ -112,8 +115,8 @@ class ReceiverGenerator {
                 .returns(ParameterizedTypeName.get(ClassName.get(Future.class), WildcardTypeName.subtypeOf(Object.class)));
                 
         registerMB.addStatement("$N = new $T<>()", consumersField, ArrayList.class);
-        
-        for (Element enclosedElement : interfaceElement.getEnclosedElements()) {
+
+        for (Element enclosedElement : elements.getAllMembers(interfaceElement)) {
 
             if (GeneratorsHelper.isElementSuitableMethod(enclosedElement)) {
 
