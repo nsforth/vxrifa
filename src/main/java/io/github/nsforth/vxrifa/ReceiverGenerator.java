@@ -191,7 +191,7 @@ class ReceiverGenerator {
             parametersWithCasting.append("(")
                 .append(ParameterSpec.get(parameter).type)
                 .append(")")
-                .append("message.get(")
+                .append("message.getParameter(")
                 .append(parameterNumber++)
                 .append("),");
         }

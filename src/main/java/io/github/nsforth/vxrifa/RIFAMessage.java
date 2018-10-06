@@ -30,8 +30,12 @@ public final class RIFAMessage {
         this.payload = payload;
     }
     
-    public Object get(int index) {
+    public Object getParameter(int index) {
         return payload[index];
+    }
+    
+    public int parametersCount() {
+        return payload.length;
     }
     
     public static RIFAMessage of(final Object... payload) {

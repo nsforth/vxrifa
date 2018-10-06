@@ -171,7 +171,7 @@ class SenderGenerator {
                 .addParameter(asyncResultParameter)
                 .beginControlFlow("if ($N.succeeded())", asyncResultParameter)
                 .addStatement("$T reply = ($T) $N.result().body()", RIFAMessage.class, RIFAMessage.class, asyncResultParameter)
-                .addStatement("$N.complete(($T) reply.get(0))", futureParameter, Tvariable)
+                .addStatement("$N.complete(($T) reply.getParameter(0))", futureParameter, Tvariable)
                 .nextControlFlow("else")
                 .addStatement("$N.fail($N.cause().getMessage())", futureParameter, asyncResultParameter)
                 .endControlFlow()
