@@ -33,14 +33,12 @@ class GeneratorsHelper {
         
         if (enclosedElement.getKind() == ElementKind.METHOD) {
 
-                ExecutableElement method = (ExecutableElement) enclosedElement;
-
-                if (method.isDefault()) {
+                ExecutableElement method = (ExecutableElement) enclosedElement;               
+                  
+                if (!method.getModifiers().contains(Modifier.ABSTRACT)) {
                     return false;
-                }               
-                if (method.getModifiers().contains(Modifier.STATIC)) {
-                    return false;
-                }
+                }                                
+                
         }
         
         return true;

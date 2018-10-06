@@ -30,6 +30,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic;
 
 /**
@@ -42,15 +43,17 @@ class PublisherGenerator {
 
     private final Messager messager;
     private final TypeElement interfaceElement;
+    private final Elements elements;
 
     private FieldSpec vertxField;
     private FieldSpec eventBusAddressField;
 
     private TypeSpec.Builder tsb;
 
-    PublisherGenerator(Messager messager, TypeElement interfaceElement) {
+    PublisherGenerator(Messager messager, TypeElement interfaceElement, Elements elements) {
         this.messager = messager;
         this.interfaceElement = interfaceElement;
+        this.elements = elements;
     }
 
     PublisherGenerator generateInitializing() {
@@ -90,7 +93,7 @@ class PublisherGenerator {
 
     PublisherGenerator generateMethods() {
 
-        for (Element enclosedElement : interfaceElement.getEnclosedElements()) {
+        for (Element enclosedElement : elements.getAllMembers(interfaceElement)) {
 
             if (GeneratorsHelper.isElementSuitableMethod(enclosedElement)) {
 
@@ -100,7 +103,7 @@ class PublisherGenerator {
 
                 if (returnType.getKind() != TypeKind.VOID) {
 
-                    messager.printMessage(Diagnostic.Kind.ERROR, "Methods should return void", enclosedElement);
+                    messager.printMessage(Diagnostic.Kind.ERROR, String.format("%s.%s should return void", interfaceElement, enclosedElement), enclosedElement);
                     continue;
 
                 }

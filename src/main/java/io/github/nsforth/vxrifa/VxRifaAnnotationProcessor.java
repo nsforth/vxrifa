@@ -35,6 +35,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic;
 
 /**
@@ -45,6 +46,7 @@ public class VxRifaAnnotationProcessor extends AbstractProcessor {
 
     private Messager messager;
     private Filer filer;
+    private Elements elements;
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
@@ -52,8 +54,8 @@ public class VxRifaAnnotationProcessor extends AbstractProcessor {
         super.init(processingEnv);
 
         messager = processingEnv.getMessager();
-
         filer = processingEnv.getFiler();
+        elements = processingEnv.getElementUtils();
 
     }
 
@@ -122,7 +124,7 @@ public class VxRifaAnnotationProcessor extends AbstractProcessor {
 
     private void generateSender(TypeElement interfaceElement, PackageElement packageElement) throws IOException {
         
-        SenderGenerator senderGenerator = new SenderGenerator(messager, interfaceElement)
+        SenderGenerator senderGenerator = new SenderGenerator(messager, interfaceElement, elements)
                 .generateInitializing()
                 .generateMethods()
                 .generateHandler();
@@ -135,7 +137,7 @@ public class VxRifaAnnotationProcessor extends AbstractProcessor {
     
     private void generatePublisher(TypeElement interfaceElement, PackageElement packageElement) throws IOException {
         
-        PublisherGenerator publisherGenerator = new PublisherGenerator(messager, interfaceElement)
+        PublisherGenerator publisherGenerator = new PublisherGenerator(messager, interfaceElement, elements)
                 .generateInitializing()
                 .generateMethods();
         
@@ -147,7 +149,7 @@ public class VxRifaAnnotationProcessor extends AbstractProcessor {
 
     private void generateReceiver(TypeElement interfaceElement, PackageElement packageElement) throws IOException {
         
-        ReceiverGenerator receiverGenerator = new ReceiverGenerator(messager, interfaceElement)
+        ReceiverGenerator receiverGenerator = new ReceiverGenerator(messager, interfaceElement, elements)
                 .generateInitializing()
                 .generateRegisterMethod()
                 .generateUnregisterMethod();
