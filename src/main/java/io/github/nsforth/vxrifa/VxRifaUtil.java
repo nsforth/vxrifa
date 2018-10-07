@@ -34,6 +34,7 @@ public class VxRifaUtil {
      */
     public static void registerRIFACodec(Vertx vertx) {
         vertx.eventBus().registerDefaultCodec(RIFAMessage.class, new RIFAMessageCodec());
+        vertx.eventBus().registerDefaultCodec(RIFAReply.class, new RIFAReplyCodec());
     }
     
     /**

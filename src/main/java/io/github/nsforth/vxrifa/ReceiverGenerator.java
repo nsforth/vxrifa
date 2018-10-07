@@ -180,9 +180,7 @@ class ReceiverGenerator {
 
     private CodeBlock makeMethodHandler(ExecutableElement method) {
 
-        CodeBlock.Builder result = CodeBlock.builder();
-
-        result.addStatement("$T message = ($T) handler.body()", RIFAMessage.class, RIFAMessage.class);
+        CodeBlock.Builder result = CodeBlock.builder();       
 
         // Generates list of params with class casting for example "(String)message.get(0),(Integer)message.get(1)"
         StringBuilder parametersWithCasting = new StringBuilder();
@@ -195,6 +193,9 @@ class ReceiverGenerator {
                 .append(parameterNumber++)
                 .append("),");
         }
+        if (parameterNumber > 0) {
+            result.addStatement("$T message = ($T) handler.body()", RIFAMessage.class, RIFAMessage.class);
+        }
         // Remove trailing comma
         if (parametersWithCasting.length() > 0) {
             parametersWithCasting.deleteCharAt(parametersWithCasting.length() - 1);
@@ -206,11 +207,16 @@ class ReceiverGenerator {
             CodeBlock.Builder lambdaBody = CodeBlock.builder()
                     .indent()
                     .beginControlFlow("if (result.succeeded())")
-                    .addStatement("handler.reply($T.of(result.result()))", RIFAMessage.class)
+                        .addStatement("handler.reply($T.of(result.result()))", RIFAReply.class)
                     .nextControlFlow("else")
-                    .addStatement("handler.fail(1, result.cause().getMessage())")
-                    .endControlFlow();            
-            result.addStatement("receiver.$L($L).setHandler(result -> {$W$L})", method.getSimpleName(), parametersWithCasting.toString(), lambdaBody.build().toString());
+                        .addStatement("handler.reply($T.of(result.cause()))", RIFAReply.class)                    
+                    .endControlFlow();
+            result
+            .beginControlFlow("try")
+                .addStatement("receiver.$L($L).setHandler(result -> {$W$L})", method.getSimpleName(), parametersWithCasting.toString(), lambdaBody.build().toString())
+            .nextControlFlow("catch (Throwable ex)")
+                .addStatement("handler.reply($T.of(ex))", RIFAReply.class)
+            .endControlFlow();
         }
 
         return result.build();

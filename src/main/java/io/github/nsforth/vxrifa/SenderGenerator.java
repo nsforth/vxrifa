@@ -170,10 +170,14 @@ class SenderGenerator {
         handlerBuilder.addParameter(futureParameter)
                 .addParameter(asyncResultParameter)
                 .beginControlFlow("if ($N.succeeded())", asyncResultParameter)
-                .addStatement("$T reply = ($T) $N.result().body()", RIFAMessage.class, RIFAMessage.class, asyncResultParameter)
-                .addStatement("$N.complete(($T) reply.getParameter(0))", futureParameter, Tvariable)
+                    .addStatement("$T reply = ($T) $N.result().body()", RIFAReply.class, RIFAReply.class, asyncResultParameter)
+                    .beginControlFlow("if (reply.isExceptional())")
+                        .addStatement("$N.fail(reply.getException())", futureParameter)
+                    .nextControlFlow("else")
+                        .addStatement("$N.complete(($T) reply.getResult())", futureParameter, Tvariable)
+                    .endControlFlow()
                 .nextControlFlow("else")
-                .addStatement("$N.fail($N.cause().getMessage())", futureParameter, asyncResultParameter)
+                    .addStatement("$N.fail($N.cause().getMessage())", futureParameter, asyncResultParameter)
                 .endControlFlow()
                 .returns(TypeName.VOID);
 
