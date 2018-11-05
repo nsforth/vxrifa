@@ -76,7 +76,9 @@ public class VxRifaUtil {
                     newInstance = (I) senderClass.getDeclaredConstructor(Vertx.class, String.class).newInstance(vertx, eventBusAddress);
                 }
                 return newInstance;
-            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            } catch (InvocationTargetException ex) {
+                throw new IllegalArgumentException(ex.getCause());
+            } catch (InstantiationException | IllegalAccessException ex) {
                 throw new IllegalArgumentException(ex);
             }
         } catch (NoSuchMethodException | SecurityException | ClassNotFoundException ex) {

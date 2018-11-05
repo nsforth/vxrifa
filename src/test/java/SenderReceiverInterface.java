@@ -16,8 +16,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package io.github.nsforth.vxrifa;
 
+
+import io.github.nsforth.vxrifa.VxRifa;
 import io.vertx.core.Future;
 
 /**
@@ -36,5 +37,7 @@ public interface SenderReceiverInterface {
     Future<Integer> withParams(int request);
     
     Future<Void> throwsUnexpectedException(String text);
+    
+    Future<Void> returnsNullInsteadOfFuture();
     
 }

@@ -16,8 +16,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package io.github.nsforth.vxrifa;
 
+import io.github.nsforth.vxrifa.VxRifaReceiver;
+import io.github.nsforth.vxrifa.VxRifaUtil;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.ext.unit.Async;
@@ -34,7 +35,7 @@ import org.junit.runner.RunWith;
  * @author Nikita Staroverov
  */
 @RunWith(VertxUnitRunner.class)
-public class SimpleSenderTests {
+public class TestSimpleSender {
 
     @Rule
     public final RunTestOnContext rule = new RunTestOnContext();
@@ -87,6 +88,11 @@ public class SimpleSenderTests {
             throw new IllegalStateException(text);
         }        
 
+        @Override
+        public Future<Void> returnsNullInsteadOfFuture() {
+            return null;
+        }
+
     }
 
     @Before
@@ -95,9 +101,21 @@ public class SimpleSenderTests {
     }
 
     @Test(timeout = 3000L)
+    public void testConstructorAssertions(TestContext context) {
+        try {
+            SenderReceiverInterface sender = VxRifaUtil.getSenderByInterface(null, SenderReceiverInterface.class);
+            context.fail("Sender constructor assertions broken or assertions disabled!");
+        } catch (Throwable ex) {
+            context.assertEquals(ex.getClass(), IllegalArgumentException.class);
+            context.assertEquals(ex.getCause().getClass(), AssertionError.class);
+            context.assertEquals(ex.getCause().getMessage(), "vertx should not be null! May be you try to create sender not in verticle start?");
+        }
+    }
+    
+    @Test(timeout = 3000L)
     public void testReceiverMethods(TestContext context) {
 
-        Async async = context.async(3);
+        Async async = context.async(4);
 
         ReceiverVerticle receiverVerticle = new ReceiverVerticle();
         SenderReceiverInterface sender = VxRifaUtil.getSenderByInterface(rule.vertx(), SenderReceiverInterface.class);
@@ -133,9 +151,23 @@ public class SimpleSenderTests {
                            context.assertEquals(cause.getMessage(), "UnexpectedErrorTest");
                            async.countDown();
                        } else {
-                           context.fail("Wrong expection type");
+                           context.fail("Wrong exception type");
                        }
                    }
+                });
+                
+                sender.returnsNullInsteadOfFuture().setHandler(handler -> {
+                   if (handler.failed()) {
+                       if (handler.cause() instanceof AssertionError) {
+                           Throwable cause = handler.cause();
+                           context.assertTrue(cause.getMessage().startsWith("Returned future should not be null! May be you forget to create appropriate result in"));
+                           async.countDown();
+                       } else {
+                           context.fail("Wrong exception type");
+                       }
+                   } else {
+                       context.fail("Wrong exception type");
+                   }                    
                 });
             
             } else {

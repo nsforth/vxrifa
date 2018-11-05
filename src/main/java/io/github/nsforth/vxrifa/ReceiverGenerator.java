@@ -86,6 +86,7 @@ class ReceiverGenerator {
                 MethodSpec.constructorBuilder()
                         .addModifiers(Modifier.PUBLIC)
                         .addParameter(io.vertx.core.Vertx.class, vertxField.name)
+                        .addStatement("assert $N != null: \"vertx should not be null! May be you try to create receiver not in verticle start?\"", vertxField)
                         .addStatement("this.$N = $N", vertxField, vertxField)
                         .addStatement("this.$N = $S", eventBusAddressField, interfaceElement.getQualifiedName().toString())
                         .build()
@@ -96,6 +97,7 @@ class ReceiverGenerator {
                         .addModifiers(Modifier.PUBLIC)
                         .addParameter(io.vertx.core.Vertx.class, vertxField.name)
                         .addParameter(java.lang.String.class, eventBusAddressField.name)
+                        .addStatement("assert $N != null: \"vertx should not be null! May be you try to create receiver not in verticle start?\"", vertxField)
                         .addStatement("this.$N = $N", vertxField, vertxField)
                         .addStatement("this.$N = $N", eventBusAddressField, eventBusAddressField)
                         .build()
@@ -213,7 +215,9 @@ class ReceiverGenerator {
                     .endControlFlow();
             result
             .beginControlFlow("try")
-                .addStatement("receiver.$L($L).setHandler(result -> {$W$L})", method.getSimpleName(), parametersWithCasting.toString(), lambdaBody.build().toString())
+                .addStatement("$T returnedFuture = receiver.$L($L)", TypeName.get(method.getReturnType()), method.getSimpleName(), parametersWithCasting.toString())
+                .addStatement("assert returnedFuture != null: \"Returned future should not be null! May be you forget to create appropriate result in $L.$L?\"", method.getEnclosingElement(), method.toString())
+                .addStatement("returnedFuture.setHandler(result -> {\n$W$L\n})", lambdaBody.build().toString())
             .nextControlFlow("catch (Throwable ex)")
                 .addStatement("handler.reply($T.of(ex))", RIFAReply.class)
             .endControlFlow();
