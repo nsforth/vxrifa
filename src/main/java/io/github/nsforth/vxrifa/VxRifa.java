@@ -93,7 +93,7 @@ import java.lang.annotation.Target;
  * I hope to solve that in near future.
  * @author Nikita Staroverov
  */
-@Retention(RetentionPolicy.SOURCE)
+@Retention(RetentionPolicy.CLASS)
 @Target(ElementType.TYPE)
 public @interface VxRifa {
     
