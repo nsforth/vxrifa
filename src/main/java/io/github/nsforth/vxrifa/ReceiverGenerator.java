@@ -205,6 +205,17 @@ class ReceiverGenerator {
 
         if (method.getReturnType().getKind() == TypeKind.VOID) {
             result.addStatement("receiver.$L($L)", method.getSimpleName(), parametersWithCasting.toString());            
+        } else if (method.getReturnType().toString().startsWith(io.vertx.core.streams.ReadStream.class.getCanonicalName())) {
+            result
+            .beginControlFlow("try")
+                .addStatement("$T readStream = receiver.$L($L)", TypeName.get(method.getReturnType()), method.getSimpleName(), parametersWithCasting.toString())
+                .addStatement("assert readStream != null: \"Returned ReadStream should not be null! May be you forget to create appropriate result in $L.$L?\"", method.getEnclosingElement(), method.toString())
+                .addStatement("String controlAddress = $N + Long.toHexString(java.util.concurrent.ThreadLocalRandom.current().nextLong())", eventBusAddressField)
+                .addStatement("handler.reply($T.of(controlAddress))", RIFAReply.class)
+                .addStatement("$T vxRifaSendingReadStream = new $T<>($N, handler.headers().get(\"DataAddress\"), controlAddress, readStream)", VxRifaSendingReadStream.class, VxRifaSendingReadStream.class, vertxField)
+            .nextControlFlow("catch (Throwable ex)")
+                .addStatement("handler.reply($T.of(ex))", RIFAReply.class)
+            .endControlFlow();
         } else {
             CodeBlock.Builder lambdaBody = CodeBlock.builder()
                     .indent()
