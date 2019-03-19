@@ -34,6 +34,7 @@ class MethodsHelper {
     private final List<ParameterSpec> parameters;
     private final String paramsNamesCommaSeparated;
     private final String paramsTypesCommaSeparated;    
+    private final String paramsTypesClassesCommaSeparated;
     
     MethodsHelper(ExecutableElement method) {
 
@@ -43,6 +44,7 @@ class MethodsHelper {
         
         StringBuilder params_names_comma_separated = new StringBuilder();
         StringBuilder params_types_comma_separated = new StringBuilder();
+        StringBuilder params_types_classes_comma_separated = new StringBuilder();
 
         for (VariableElement parameter : method.getParameters()) {
 
@@ -52,10 +54,12 @@ class MethodsHelper {
 
             params_names_comma_separated.append(ps.name);
             params_types_comma_separated.append(ps.type);
+            params_types_classes_comma_separated.append(ps.type);            
             params_names_comma_separated.append(",");
             params_types_comma_separated.append(",");
+            params_types_classes_comma_separated.append(".class,");
 
-        }
+        }        
 
         // Remove trailing comma
         if (params_names_comma_separated.length() > 0) {
@@ -64,9 +68,13 @@ class MethodsHelper {
         if (params_types_comma_separated.length() > 0) {
             params_types_comma_separated.deleteCharAt(params_types_comma_separated.length() - 1);
         }
+        if (params_types_classes_comma_separated.length() > 0) {
+            params_types_classes_comma_separated.deleteCharAt(params_types_classes_comma_separated.length() - 1);
+        }        
         
         paramsNamesCommaSeparated = params_names_comma_separated.toString();
         paramsTypesCommaSeparated = params_types_comma_separated.toString();
+        paramsTypesClassesCommaSeparated = params_types_classes_comma_separated.toString();
 
     }
 
@@ -84,6 +92,10 @@ class MethodsHelper {
 
     String getParamsTypesCommaSeparated() {
         return paramsTypesCommaSeparated;
+    }
+
+    String getParamsTypesClassesCommaSeparated() {
+        return paramsTypesClassesCommaSeparated;
     }
     
 }
