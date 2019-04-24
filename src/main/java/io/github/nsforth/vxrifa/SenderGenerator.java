@@ -39,7 +39,10 @@ import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic;
 
 /**
- * Generates implementation for interface annotated with {@link VxRifa}. Generated implementation wraps method's params to {@link RIFAMessage} and sends message by eventBus.
+ * Generates implementation for interface annotated with {@link VxRifa}.
+ * Generated implementation wraps method's params to {@link RIFAMessage} and
+ * sends message by eventBus.
+ *
  * @author Nikita Staroverov
  */
 class SenderGenerator {
@@ -108,10 +111,10 @@ class SenderGenerator {
 
                 TypeMirror returnType = method.getReturnType();
 
-                if (!(returnType.toString().startsWith(io.vertx.core.Future.class.getCanonicalName()) ||
-                        returnType.toString().startsWith(io.vertx.core.streams.ReadStream.class.getCanonicalName()) ||
-                        returnType.toString().startsWith(io.vertx.core.streams.WriteStream.class.getCanonicalName()) ||
-                        returnType.getKind() == TypeKind.VOID)) {
+                if (!(returnType.toString().startsWith(io.vertx.core.Future.class.getCanonicalName())
+                        || returnType.toString().startsWith(io.vertx.core.streams.ReadStream.class.getCanonicalName())
+                        || returnType.toString().startsWith(io.vertx.core.streams.WriteStream.class.getCanonicalName())
+                        || returnType.getKind() == TypeKind.VOID)) {
 
                     messager.printMessage(Diagnostic.Kind.ERROR, String.format("%s.%s should return one of io.vertx.core.Future,io.vertx.core.streams.ReadStream,io.vertx.core.streams.WriteStream,void", interfaceElement, enclosedElement), enclosedElement);
                     continue;
@@ -127,28 +130,20 @@ class SenderGenerator {
                 methodsHelper.getParameters().forEach(param -> methodBuilder.addParameter(param));
 
                 if (returnType.getKind() == TypeKind.VOID) {
-                    if (methodsHelper.getParameters().isEmpty()) {
-                        methodBuilder.addStatement("this.$N.eventBus().send($N + $S, null)", vertxField, eventBusAddressField, methodsHelper.generateEventBusSuffix());
-                    } else {
-                        methodBuilder.addStatement("this.$N.eventBus().send($N + $S, $T.of($N))", vertxField, eventBusAddressField, methodsHelper.generateEventBusSuffix(), RIFAMessage.class, methodsHelper.getParamsNamesCommaSeparated());
-                    }
+                    methodBuilder.addStatement("this.$N.eventBus().send($N, $T.of($S, $N))", vertxField, eventBusAddressField, RIFAMessage.class, methodsHelper.generateEventBusSuffix(), methodsHelper.getParamsNamesCommaSeparatedOrCastedNull());
                 } else if (returnType.toString().startsWith(io.vertx.core.streams.ReadStream.class.getCanonicalName())) {
                     methodBuilder.addStatement("String dataAddress = $N + Long.toHexString(java.util.concurrent.ThreadLocalRandom.current().nextLong())", eventBusAddressField);
-                    methodBuilder.addStatement("String remoteAddress = $N + $S", eventBusAddressField, methodsHelper.generateEventBusSuffix());
-                    methodBuilder.addStatement("return new $T<>($N, dataAddress, remoteAddress, $T.of($N))", VxRifaReceivingReadStream.class, vertxField, RIFAMessage.class, methodsHelper.getParamsNamesCommaSeparated());
+                    methodBuilder.addStatement("String remoteAddress = $N", eventBusAddressField);
+                    methodBuilder.addStatement("return new $T<>($N, dataAddress, remoteAddress, $T.of($S, $N))", VxRifaReceivingReadStream.class, vertxField, RIFAMessage.class, methodsHelper.generateEventBusSuffix(), methodsHelper.getParamsNamesCommaSeparatedOrCastedNull());
                 } else if (returnType.toString().startsWith(io.vertx.core.streams.WriteStream.class.getCanonicalName())) {
                     methodBuilder.addStatement("String controlAddress = $N + Long.toHexString(java.util.concurrent.ThreadLocalRandom.current().nextLong())", eventBusAddressField);
-                    methodBuilder.addStatement("String remoteAddress = $N + $S", eventBusAddressField, methodsHelper.generateEventBusSuffix());
-                    methodBuilder.addStatement("return new $T<>($N, controlAddress, remoteAddress, $T.of($N))", VxRifaSendingWriteStream.class, vertxField, RIFAMessage.class, methodsHelper.getParamsNamesCommaSeparated());
+                    methodBuilder.addStatement("String remoteAddress = $N", eventBusAddressField);
+                    methodBuilder.addStatement("return new $T<>($N, controlAddress, remoteAddress, $T.of($S, $N))", VxRifaSendingWriteStream.class, vertxField, RIFAMessage.class, methodsHelper.generateEventBusSuffix(), methodsHelper.getParamsNamesCommaSeparatedOrCastedNull());
                 } else {
                     methodBuilder.addStatement("$T future = $T.future()", TypeName.get(returnType), io.vertx.core.Future.class);
-                    if (methodsHelper.getParameters().isEmpty()) {
-                        methodBuilder.addStatement("this.$N.eventBus().send($N + $S, null, result -> handle(future,result))", vertxField, eventBusAddressField, methodsHelper.generateEventBusSuffix());
-                    } else {
-                        methodBuilder.addStatement("this.$N.eventBus().send($N + $S, $T.of($N), result -> handle(future,result))",
-                                vertxField, eventBusAddressField, methodsHelper.generateEventBusSuffix(), RIFAMessage.class, methodsHelper.getParamsNamesCommaSeparated()
-                        );
-                    }
+                    methodBuilder.addStatement("this.$N.eventBus().send($N, $T.of($S, $N), result -> handle(future,result))",
+                            vertxField, eventBusAddressField, RIFAMessage.class, methodsHelper.generateEventBusSuffix(), methodsHelper.getParamsNamesCommaSeparatedOrCastedNull()
+                    );
                     methodBuilder.addStatement("return future");
                 }
 
@@ -183,14 +178,14 @@ class SenderGenerator {
         handlerBuilder.addParameter(futureParameter)
                 .addParameter(asyncResultParameter)
                 .beginControlFlow("if ($N.succeeded())", asyncResultParameter)
-                    .addStatement("$T reply = ($T) $N.result().body()", RIFAReply.class, RIFAReply.class, asyncResultParameter)
-                    .beginControlFlow("if (reply.isExceptional())")
-                        .addStatement("$N.fail(reply.getException())", futureParameter)
-                    .nextControlFlow("else")
-                        .addStatement("$N.complete(($T) reply.getResult())", futureParameter, Tvariable)
-                    .endControlFlow()
+                .addStatement("$T reply = ($T) $N.result().body()", RIFAReply.class, RIFAReply.class, asyncResultParameter)
+                .beginControlFlow("if (reply.isExceptional())")
+                .addStatement("$N.fail(reply.getException())", futureParameter)
                 .nextControlFlow("else")
-                    .addStatement("$N.fail($N.cause().getMessage())", futureParameter, asyncResultParameter)
+                .addStatement("$N.complete(($T) reply.getResult())", futureParameter, Tvariable)
+                .endControlFlow()
+                .nextControlFlow("else")
+                .addStatement("$N.fail($N.cause().getMessage())", futureParameter, asyncResultParameter)
                 .endControlFlow()
                 .returns(TypeName.VOID);
 

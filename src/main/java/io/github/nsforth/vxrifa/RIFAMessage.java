@@ -24,10 +24,16 @@ package io.github.nsforth.vxrifa;
  */
 public final class RIFAMessage {
     
+    private final String suffix;
     private final Object[] payload;
 
-    private RIFAMessage(final Object... payload) {
+    private RIFAMessage(final String suffix, final Object... payload) {
+        this.suffix = suffix;
         this.payload = payload;
+    }
+
+    public String getSuffix() {
+        return suffix;
     }
     
     public Object getParameter(int index) {
@@ -38,8 +44,8 @@ public final class RIFAMessage {
         return payload.length;
     }
     
-    public static RIFAMessage of(final Object... payload) {
-        return new RIFAMessage(payload);
+    public static RIFAMessage of(final String suffix, final Object... payload) {        
+        return new RIFAMessage(suffix, payload);
     }
     
 }

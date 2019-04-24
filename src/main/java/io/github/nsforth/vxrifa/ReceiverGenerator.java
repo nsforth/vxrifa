@@ -27,13 +27,13 @@ import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import com.squareup.javapoet.WildcardTypeName;
-import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.Map;
 import javax.annotation.processing.Messager;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -60,7 +60,8 @@ class ReceiverGenerator {
 
     private FieldSpec vertxField;
     private FieldSpec eventBusAddressField;
-    private FieldSpec consumersField;
+    private FieldSpec handlersField;
+    private FieldSpec consumerField;
     private TypeSpec.Builder tsb;
 
     ReceiverGenerator(Messager messager, TypeElement interfaceElement, Elements elements) {
@@ -81,9 +82,12 @@ class ReceiverGenerator {
         eventBusAddressField = FieldSpec.builder(java.lang.String.class, "eventBusAddress", Modifier.PRIVATE, Modifier.FINAL).build();
         tsb.addField(eventBusAddressField);
 
-        consumersField = FieldSpec.builder(ParameterizedTypeName.get(ClassName.get(List.class), ParameterizedTypeName.get(ClassName.get(MessageConsumer.class), WildcardTypeName.subtypeOf(Object.class))), "consumers", Modifier.PRIVATE)
+        handlersField = FieldSpec.builder(ParameterizedTypeName.get(ClassName.get(Map.class), TypeName.get(String.class), ParameterizedTypeName.get(ClassName.get(Handler.class), ParameterizedTypeName.get(ClassName.get(Message.class), ParameterizedTypeName.get(RIFAMessage.class)))), "handlers", Modifier.PRIVATE)
                 .build();
-        tsb.addField(consumersField);
+        tsb.addField(handlersField);
+
+        consumerField = FieldSpec.builder(ParameterizedTypeName.get(ClassName.get(MessageConsumer.class), TypeName.get(RIFAMessage.class)), "consumer", Modifier.PRIVATE).build();
+        tsb.addField(consumerField);
 
         tsb.addMethod(
                 MethodSpec.constructorBuilder()
@@ -119,7 +123,9 @@ class ReceiverGenerator {
                 .addParameter(TypeName.get(interfaceElement.asType()), "receiver", Modifier.FINAL)
                 .returns(ParameterizedTypeName.get(ClassName.get(Future.class), WildcardTypeName.subtypeOf(Object.class)));
 
-        registerMB.addStatement("$N = new $T<>()", consumersField, ArrayList.class);
+        registerMB.addStatement("$N = new $T<>()", handlersField, HashMap.class);
+
+        registerMB.beginControlFlow("try");
 
         for (Element enclosedElement : elements.getAllMembers(interfaceElement)) {
 
@@ -129,7 +135,6 @@ class ReceiverGenerator {
 
                 MethodsHelper methodsHelper = new MethodsHelper(method);
 
-                registerMB.beginControlFlow("try");
                 String paramsTypesClassesCommaSeparated = methodsHelper.getParamsTypesClassesCommaSeparated();
                 if ("".equals(paramsTypesClassesCommaSeparated)) {
                     registerMB.beginControlFlow("if (receiver.getClass().getMethod($S, (Class<?>[]) null).getAnnotation($T.class) == null)",
@@ -140,31 +145,24 @@ class ReceiverGenerator {
                             method.getSimpleName(), paramsTypesClassesCommaSeparated, TypeName.get(VxRifaIgnore.class)
                     );
                 }
-                registerMB.addStatement("$N.add(this.vertx.eventBus().consumer(eventBusAddress + $S, handler -> {$W$L$W}))",
-                        consumersField,
+                registerMB.addStatement("$N.put($S, handler -> {$W$L$W})",
+                        handlersField,
                         methodsHelper.generateEventBusSuffix(),
                         makeMethodHandler(method).toString()
                 );
                 registerMB.endControlFlow();
-                registerMB.nextControlFlow("catch ($T ex)", TypeName.get(NoSuchMethodException.class));
-                registerMB.addStatement("throw new $T(ex)", TypeName.get(IllegalArgumentException.class));
-                registerMB.endControlFlow();
 
             }
         }
+        
+        registerMB.addStatement("$N = this.$N.eventBus().consumer($N, message -> $N.get(message.body().getSuffix()).handle(message))", consumerField, vertxField, eventBusAddressField, handlersField);
 
-        // Generates consumers waiting Future for success registration
-        registerMB.addStatement("return $T.all($N.stream().map((consumer) -> {"
-                + "$T future = $T.future();"
-                + "consumer.completionHandler(future.completer());"
-                + "return future;"
-                + "}).collect($T.toList()))",
-                CompositeFuture.class,
-                consumersField,
-                ParameterizedTypeName.get(ClassName.get(Future.class), TypeName.get(Void.class)),
-                TypeName.get(Future.class),
-                TypeName.get(Collectors.class)
-        );
+        registerMB.nextControlFlow("catch ($T ex)", TypeName.get(NoSuchMethodException.class));
+        registerMB.addStatement("throw new $T(ex)", TypeName.get(IllegalArgumentException.class));
+        registerMB.endControlFlow();
+        registerMB.addStatement("$T future = $T.future()", ParameterizedTypeName.get(ClassName.get(Future.class), TypeName.get(Void.class)), Future.class);
+        registerMB.addStatement("$N.completionHandler(future.completer())", consumerField);
+        registerMB.addStatement("return future");
 
         tsb.addMethod(registerMB.build());
 
@@ -179,17 +177,9 @@ class ReceiverGenerator {
         // Generates cosumers waiting Future for success handler unregistration
         unregisterMB.addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)
-                .addStatement("return $T.all($N.stream().map((consumer) -> {"
-                        + "$T future = $T.future();"
-                        + "consumer.unregister(future.completer());"
-                        + "return future;"
-                        + "}).collect($T.toList()))",
-                        CompositeFuture.class,
-                        consumersField,
-                        ParameterizedTypeName.get(ClassName.get(Future.class), TypeName.get(Void.class)),
-                        TypeName.get(Future.class),
-                        TypeName.get(Collectors.class)
-                )
+                .addStatement("$T future = $T.future()", ParameterizedTypeName.get(ClassName.get(Future.class), TypeName.get(Void.class)), Future.class)
+                .addStatement("$N.unregister(future.completer())", consumerField)
+                .addStatement("return future")
                 .returns(ParameterizedTypeName.get(ClassName.get(Future.class), WildcardTypeName.subtypeOf(Object.class)));
 
         tsb.addMethod(unregisterMB.build());
@@ -214,7 +204,7 @@ class ReceiverGenerator {
                     .append("),");
         }
         if (parameterNumber > 0) {
-            result.addStatement("$T message = ($T) handler.body()", RIFAMessage.class, RIFAMessage.class);
+            result.addStatement("$T message = handler.body()", RIFAMessage.class);
         }
         // Remove trailing comma
         if (parametersWithCasting.length() > 0) {
@@ -230,7 +220,7 @@ class ReceiverGenerator {
                     .addStatement("assert readStream != null: \"Returned ReadStream should not be null! May be you forget to create appropriate result in $L.$L?\"", method.getEnclosingElement(), method.toString())
                     .addStatement("String controlAddress = $N + Long.toHexString(java.util.concurrent.ThreadLocalRandom.current().nextLong())", eventBusAddressField)
                     .addStatement("handler.reply($T.of(controlAddress))", RIFAReply.class)
-                    .addStatement("$T vxRifaSendingReadStream = new $T<>($N, handler.headers().get(\"DataAddress\"), controlAddress, readStream)", 
+                    .addStatement("$T vxRifaSendingReadStream = new $T<>($N, handler.headers().get(\"DataAddress\"), controlAddress, readStream)",
                             ParameterizedTypeName.get(ClassName.get(VxRifaSendingReadStream.class), WildcardTypeName.subtypeOf(Object.class)), VxRifaSendingReadStream.class, vertxField)
                     .nextControlFlow("catch (Throwable ex)")
                     .addStatement("handler.reply($T.of(ex))", RIFAReply.class)
@@ -240,8 +230,8 @@ class ReceiverGenerator {
                     .beginControlFlow("try")
                     .addStatement("$T writeStream = receiver.$L($L)", TypeName.get(method.getReturnType()), method.getSimpleName(), parametersWithCasting.toString())
                     .addStatement("assert writeStream != null: \"Returned WriteStream should not be null! May be you forget to create appropriate result in $L.$L?\"", method.getEnclosingElement(), method.toString())
-                    .addStatement("String dataAddress = $N + Long.toHexString(java.util.concurrent.ThreadLocalRandom.current().nextLong())", eventBusAddressField)                    
-                    .addStatement("$T vxRifaReceivingWriteStream = new $T<>($N, dataAddress, handler.headers().get(\"ControlAddress\"), handler, writeStream)", 
+                    .addStatement("String dataAddress = $N + Long.toHexString(java.util.concurrent.ThreadLocalRandom.current().nextLong())", eventBusAddressField)
+                    .addStatement("$T vxRifaReceivingWriteStream = new $T<>($N, dataAddress, handler.headers().get(\"ControlAddress\"), handler, writeStream)",
                             ParameterizedTypeName.get(ClassName.get(VxRifaReceivingWriteStream.class), WildcardTypeName.subtypeOf(Object.class)), VxRifaReceivingWriteStream.class, vertxField)
                     .nextControlFlow("catch (Throwable ex)")
                     .addStatement("handler.reply($T.of(ex))", RIFAReply.class)

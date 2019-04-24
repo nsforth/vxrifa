@@ -37,7 +37,7 @@ public class VxRifaReceivingWriteStream<T> {
     private final String controlAddress;     
     private long receivedConter;
 
-    public VxRifaReceivingWriteStream(Vertx vertx, String dataAddress, String controlAddress, Message<Object> controlReply, WriteStream<T> writeStream) {
+    public VxRifaReceivingWriteStream(Vertx vertx, String dataAddress, String controlAddress, Message<RIFAMessage> controlReply, WriteStream<T> writeStream) {
         this.vertx = vertx;
         this.controlAddress = controlAddress;
         this.writeStream = writeStream;

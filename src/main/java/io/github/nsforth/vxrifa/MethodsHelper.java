@@ -79,7 +79,7 @@ class MethodsHelper {
     }
 
     String generateEventBusSuffix() {
-        return String.format("::%s(%s)", method.getSimpleName(), paramsTypesCommaSeparated);
+        return String.format("%s(%s)", method.getSimpleName(), paramsTypesCommaSeparated);
     }
     
     List<ParameterSpec> getParameters() {
@@ -88,6 +88,14 @@ class MethodsHelper {
     
     String getParamsNamesCommaSeparated() {
         return paramsNamesCommaSeparated;
+    }
+    
+    String getParamsNamesCommaSeparatedOrCastedNull() {
+        if (paramsNamesCommaSeparated.equals("")) {
+            return "(Object[]) null";
+        } else {
+            return paramsNamesCommaSeparated;
+        }
     }
 
     String getParamsTypesCommaSeparated() {

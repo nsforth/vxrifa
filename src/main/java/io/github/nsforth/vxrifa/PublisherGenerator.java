@@ -119,9 +119,9 @@ class PublisherGenerator {
                 methodsHelper.getParameters().forEach(param -> methodBuilder.addParameter(param));
 
                 if (methodsHelper.getParameters().isEmpty()) {
-                    methodBuilder.addStatement("this.$N.eventBus().publish($N + $S, null)", vertxField, eventBusAddressField, methodsHelper.generateEventBusSuffix());
+                    methodBuilder.addStatement("this.$N.eventBus().publish($N, $T.of($S, null))", vertxField, eventBusAddressField, RIFAMessage.class, methodsHelper.generateEventBusSuffix());
                 } else {
-                    methodBuilder.addStatement("this.$N.eventBus().publish($N + $S, $T.of($N))", vertxField, eventBusAddressField, methodsHelper.generateEventBusSuffix(), RIFAMessage.class, methodsHelper.getParamsNamesCommaSeparated());
+                    methodBuilder.addStatement("this.$N.eventBus().publish($N, $T.of($S, $N))", vertxField, eventBusAddressField, RIFAMessage.class, methodsHelper.generateEventBusSuffix(), methodsHelper.getParamsNamesCommaSeparated());
                 }
 
                 methodBuilder.addAnnotation(Override.class);
