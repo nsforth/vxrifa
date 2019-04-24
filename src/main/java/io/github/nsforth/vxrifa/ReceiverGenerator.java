@@ -153,7 +153,7 @@ class ReceiverGenerator {
             }
         }
 
-        // Generates cosumers waiting Future for success registration
+        // Generates consumers waiting Future for success registration
         registerMB.addStatement("return $T.all($N.stream().map((consumer) -> {"
                 + "$T future = $T.future();"
                 + "consumer.completionHandler(future.completer());"
@@ -232,6 +232,17 @@ class ReceiverGenerator {
                     .addStatement("handler.reply($T.of(controlAddress))", RIFAReply.class)
                     .addStatement("$T vxRifaSendingReadStream = new $T<>($N, handler.headers().get(\"DataAddress\"), controlAddress, readStream)", 
                             ParameterizedTypeName.get(ClassName.get(VxRifaSendingReadStream.class), WildcardTypeName.subtypeOf(Object.class)), VxRifaSendingReadStream.class, vertxField)
+                    .nextControlFlow("catch (Throwable ex)")
+                    .addStatement("handler.reply($T.of(ex))", RIFAReply.class)
+                    .endControlFlow();
+        } else if (method.getReturnType().toString().startsWith(io.vertx.core.streams.WriteStream.class.getCanonicalName())) {
+            result
+                    .beginControlFlow("try")
+                    .addStatement("$T writeStream = receiver.$L($L)", TypeName.get(method.getReturnType()), method.getSimpleName(), parametersWithCasting.toString())
+                    .addStatement("assert writeStream != null: \"Returned WriteStream should not be null! May be you forget to create appropriate result in $L.$L?\"", method.getEnclosingElement(), method.toString())
+                    .addStatement("String dataAddress = $N + Long.toHexString(java.util.concurrent.ThreadLocalRandom.current().nextLong())", eventBusAddressField)                    
+                    .addStatement("$T vxRifaReceivingWriteStream = new $T<>($N, dataAddress, handler.headers().get(\"ControlAddress\"), handler, writeStream)", 
+                            ParameterizedTypeName.get(ClassName.get(VxRifaReceivingWriteStream.class), WildcardTypeName.subtypeOf(Object.class)), VxRifaReceivingWriteStream.class, vertxField)
                     .nextControlFlow("catch (Throwable ex)")
                     .addStatement("handler.reply($T.of(ex))", RIFAReply.class)
                     .endControlFlow();

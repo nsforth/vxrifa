@@ -108,9 +108,12 @@ class SenderGenerator {
 
                 TypeMirror returnType = method.getReturnType();
 
-                if (!(returnType.toString().startsWith(io.vertx.core.Future.class.getCanonicalName()) || returnType.toString().startsWith(io.vertx.core.streams.ReadStream.class.getCanonicalName()) || returnType.getKind() == TypeKind.VOID)) {
+                if (!(returnType.toString().startsWith(io.vertx.core.Future.class.getCanonicalName()) ||
+                        returnType.toString().startsWith(io.vertx.core.streams.ReadStream.class.getCanonicalName()) ||
+                        returnType.toString().startsWith(io.vertx.core.streams.WriteStream.class.getCanonicalName()) ||
+                        returnType.getKind() == TypeKind.VOID)) {
 
-                    messager.printMessage(Diagnostic.Kind.ERROR, String.format("%s.%s should return one of io.vertx.core.Future,io.vertx.core.streams.ReadStream,void", interfaceElement, enclosedElement), enclosedElement);
+                    messager.printMessage(Diagnostic.Kind.ERROR, String.format("%s.%s should return one of io.vertx.core.Future,io.vertx.core.streams.ReadStream,io.vertx.core.streams.WriteStream,void", interfaceElement, enclosedElement), enclosedElement);
                     continue;
 
                 }
@@ -133,6 +136,10 @@ class SenderGenerator {
                     methodBuilder.addStatement("String dataAddress = $N + Long.toHexString(java.util.concurrent.ThreadLocalRandom.current().nextLong())", eventBusAddressField);
                     methodBuilder.addStatement("String remoteAddress = $N + $S", eventBusAddressField, methodsHelper.generateEventBusSuffix());
                     methodBuilder.addStatement("return new $T<>($N, dataAddress, remoteAddress, $T.of($N))", VxRifaReceivingReadStream.class, vertxField, RIFAMessage.class, methodsHelper.getParamsNamesCommaSeparated());
+                } else if (returnType.toString().startsWith(io.vertx.core.streams.WriteStream.class.getCanonicalName())) {
+                    methodBuilder.addStatement("String controlAddress = $N + Long.toHexString(java.util.concurrent.ThreadLocalRandom.current().nextLong())", eventBusAddressField);
+                    methodBuilder.addStatement("String remoteAddress = $N + $S", eventBusAddressField, methodsHelper.generateEventBusSuffix());
+                    methodBuilder.addStatement("return new $T<>($N, controlAddress, remoteAddress, $T.of($N))", VxRifaSendingWriteStream.class, vertxField, RIFAMessage.class, methodsHelper.getParamsNamesCommaSeparated());
                 } else {
                     methodBuilder.addStatement("$T future = $T.future()", TypeName.get(returnType), io.vertx.core.Future.class);
                     if (methodsHelper.getParameters().isEmpty()) {
