@@ -78,7 +78,7 @@ public class VxRifaSendingWriteStream<T> implements WriteStream<T> {
     public void end() {
         checkDataAddress();
         controlConsumer.unregister();
-        vertx.eventBus().send(dataAddress, RIFAMessage.of("End"));
+        vertx.eventBus().send(dataAddress, RIFAMessage.of("End", null));
     }
     
     @Override
