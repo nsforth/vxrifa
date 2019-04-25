@@ -132,4 +132,10 @@ public class VxRifaReceivingReadStream<T> implements ReadStream<T> {
         }
     }
 
+    @Override
+    public ReadStream<T> fetch(long l) {
+        dataStream.fetch(l);
+        return this;
+    }
+
 }
