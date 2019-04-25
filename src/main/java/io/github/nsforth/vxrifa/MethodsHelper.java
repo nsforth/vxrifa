@@ -19,6 +19,7 @@
 package io.github.nsforth.vxrifa;
 
 import com.squareup.javapoet.ParameterSpec;
+import com.squareup.javapoet.TypeName;
 import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.ExecutableElement;
@@ -54,7 +55,7 @@ class MethodsHelper {
 
             params_names_comma_separated.append(ps.name);
             params_types_comma_separated.append(ps.type);
-            params_types_classes_comma_separated.append(ps.type);            
+            params_types_classes_comma_separated.append(ps.type.toString().replaceAll("<.*>", ""));
             params_names_comma_separated.append(",");
             params_types_comma_separated.append(",");
             params_types_classes_comma_separated.append(".class,");
