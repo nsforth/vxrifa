@@ -56,6 +56,9 @@ public class VxRifaSendingWriteStream<T> implements WriteStream<T> {
                         } else {
                             dataAddress = (String) rifaReply.getResult();
                             vertx.eventBus().send(dataAddress, RIFAMessage.of("SetQueueSize", maxQueueSize));
+                            if (this.drainHandler != null) {
+                                this.drainHandler.handle(null);
+                            }
                         }
                     } else {
                         closeExceptionally(result.cause());
