@@ -99,7 +99,7 @@ public class VxRifaReceivingReadStream<T> implements ReadStream<T> {
 
     private void processDataMessage(RIFAMessage rifaMessage) {
         receivedCounter++;
-        String messageType = (String) rifaMessage.getParameter(0);
+        String messageType = rifaMessage.getSuffix();
         switch (messageType) {
             case "Data":
                 long acks = receivedCounter - ackCounter;
@@ -108,12 +108,12 @@ public class VxRifaReceivingReadStream<T> implements ReadStream<T> {
                     vertx.eventBus().send(controlAddress, RIFAMessage.of("Ack", ackCounter));
                 }
                 if (this.handler != null) {
-                    this.handler.handle((T) rifaMessage.getParameter(1));
+                    this.handler.handle((T) rifaMessage.getParameter(0));
                 }
                 break;
             case "Exception":
                 vertx.eventBus().send(controlAddress, RIFAMessage.of("Ack", receivedCounter));
-                closeExceptionally((Throwable) rifaMessage.getParameter(1));
+                closeExceptionally((Throwable) rifaMessage.getParameter(0));
                 break;
             case "End":
                 vertx.eventBus().send(controlAddress, RIFAMessage.of("Ack", receivedCounter));

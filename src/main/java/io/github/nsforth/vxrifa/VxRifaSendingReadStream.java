@@ -81,10 +81,10 @@ public class VxRifaSendingReadStream<T> {
     }
     
     private void receiveControlMessage(RIFAMessage rifaMessage) {
-        String messageType = (String) rifaMessage.getParameter(0);
+        String messageType = rifaMessage.getSuffix();
         switch (messageType) {
             case "Ack":
-                this.ackCounter = (long) rifaMessage.getParameter(1);
+                this.ackCounter = (long) rifaMessage.getParameter(0);
                 if (sentCounter - ackCounter < ACK_WINDOW) {                    
                     input.resume();
                 }

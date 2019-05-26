@@ -18,7 +18,6 @@
  */
 package io.github.nsforth.vxrifa;
 
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
@@ -78,7 +77,7 @@ public class VxRifaSendingWriteStream<T> implements WriteStream<T> {
     public void end() {
         checkDataAddress();
         controlConsumer.unregister();
-        vertx.eventBus().send(dataAddress, RIFAMessage.of("End", null));
+        vertx.eventBus().send(dataAddress, RIFAMessage.of("End"));
     }
     
     @Override
@@ -111,11 +110,11 @@ public class VxRifaSendingWriteStream<T> implements WriteStream<T> {
     }
     
     private void receiveControlMessage(RIFAMessage rifaMessage) {
-        String messageType = (String) rifaMessage.getParameter(0);
+        String messageType = rifaMessage.getSuffix();
         switch (messageType) {
             case "Ack":
                 boolean wasFull = writeQueueFull();
-                this.ackCounter = (long) rifaMessage.getParameter(1);
+                this.ackCounter = (long) rifaMessage.getParameter(0);
                 boolean nowFull = writeQueueFull();
                 if (wasFull && !nowFull) {
                     if (this.drainHandler != null) {
@@ -124,7 +123,7 @@ public class VxRifaSendingWriteStream<T> implements WriteStream<T> {
                 }
                 break;
             case "Exception":
-                closeExceptionally((Throwable) rifaMessage.getParameter(1));                
+                closeExceptionally((Throwable) rifaMessage.getParameter(0));                
                 break;
         }
     }

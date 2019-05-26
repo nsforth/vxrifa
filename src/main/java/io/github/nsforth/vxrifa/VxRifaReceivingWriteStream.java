@@ -59,17 +59,17 @@ public class VxRifaReceivingWriteStream<T> {
     }
 
     private void processDataMessage(RIFAMessage rifaMessage) {
-        String messageType = (String) rifaMessage.getParameter(0);
+        String messageType = rifaMessage.getSuffix();
         switch (messageType) {
             case "Data":
                 receivedConter++;
-                writeStream.write((T) rifaMessage.getParameter(1));
+                writeStream.write((T) rifaMessage.getParameter(0));
                 if (writeStream.writeQueueFull()) {
                     dataStream.pause();
                 }
                 break;
             case "SetQueueSize":
-                writeStream.setWriteQueueMaxSize((int) rifaMessage.getParameter(1));
+                writeStream.setWriteQueueMaxSize((int) rifaMessage.getParameter(0));
                 if (writeStream.writeQueueFull()) {
                     dataStream.pause();
                 } else {
@@ -78,12 +78,7 @@ public class VxRifaReceivingWriteStream<T> {
                 }
                 break;
             case "End":
-                T data = (T) rifaMessage.getParameter(1);
-                if (data != null) {
-                    writeStream.end(data);
-                } else {
-                    writeStream.end();
-                }
+                writeStream.end();                
                 this.dataConsumer.unregister();
                 break;
         }
