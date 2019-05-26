@@ -12,16 +12,16 @@ Maven (in your pom.xml):
 <dependency>
   <groupId>io.github.nsforth</groupId>
   <artifactId>vxrifa</artifactId>
-  <version>1.1.0</version>
+  <version>1.3.0</version>
 </dependency>
 ```
 Gradle (in your gradle build.xml):
 ```
 dependencies {
-  compile 'io.github.nsforth:vxrifa:1.1.0'
+  compile 'io.github.nsforth:vxrifa:1.3.0'
 }
 ```
-Any interface can be annotated with <tt>@VxRifa</tt>. Methods should return void or <tt>io.vertx.core.Future</tt>.
+Any interface can be annotated with <tt>@VxRifa</tt>. Methods should return one of void, <tt>io.vertx.core.Future</tt>, <tt>io.vertx.core.streams.ReadStream</tt>, <tt>io.vertx.core.streams.WriteStream</tt>.
 Whenever java compiler processes annotations (when building project or on the fly in modern IDEs) VxRifa generates special classes that do all work. You can see generated code under <tt>target/generated-sources</tt> with maven or under <tt>build</tt> directory with gradle.
 For example:
 ```java
@@ -74,6 +74,15 @@ calc.sumTwoDoubles(1.0, 2.0).setHandler(result -> {
     }
 });
 ```
+## Publish/Subscribe scheme
+It is possible to send broadcast messages for multiple instances of some interface annotated with @VxRifaPublish.
+It's one way communication of course so methods can't return anything but void.
+You should use <tt>VxRifaUtil.getPublisherByInterface</tt> to get instance of publisher for @VxRifaPublish subscribers.
+## Streams support
+Interfaces annotated with @VxRifa can have methods returning two types of streams: ReadStream and WriteStream.
+VxRifa wraps your streams and push your data through Vert.X eventbus automatically.
+Stream is not immediately ready after invoking on sender side method with Stream return types and you should properly connect it to your handlers.
+For example, you should set <tt>drainHandler</tt> for WriteStream. For ReadStream it should be <tt>handler</tt> and <tt>endHandler</tt>.
 ## Notes and limitations 
 There is one small thing that should be done before using VxRifa. You must call <tt>VxRifaUtil.registerRIFACodec</tt> once for any instance of Vert.x.
 VxRifa uses wrapper as container for methods parameters so that wrapper should be registered before any sending by eventBus.<br>
