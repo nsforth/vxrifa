@@ -17,6 +17,7 @@
  * MA 02110-1301  USA
  */
 
+import io.github.nsforth.vxrifa.VxRifaIgnore;
 import io.github.nsforth.vxrifa.VxRifaReceiver;
 import io.github.nsforth.vxrifa.VxRifaUtil;
 import io.vertx.core.AbstractVerticle;
@@ -93,6 +94,12 @@ public class TestSimpleSender {
             return null;
         }
 
+        @Override
+        @VxRifaIgnore
+        public Future<Void> ignoredMethod() {
+            return null;
+        }
+
     }
 
     @Before
@@ -115,7 +122,7 @@ public class TestSimpleSender {
     @Test(timeout = 3000L)
     public void testReceiverMethods(TestContext context) {
 
-        Async async = context.async(4);
+        Async async = context.async(5);
 
         ReceiverVerticle receiverVerticle = new ReceiverVerticle();
         SenderReceiverInterface sender = VxRifaUtil.getSenderByInterface(rule.vertx(), SenderReceiverInterface.class);
@@ -168,6 +175,20 @@ public class TestSimpleSender {
                    } else {
                        context.fail("Wrong exception type");
                    }                    
+                });
+                
+                sender.ignoredMethod().setHandler(handler -> {
+                   if (handler.succeeded()) {
+                       context.fail("Should catch exception");
+                   } else {
+                       Throwable cause = handler.cause();
+                       if (cause instanceof UnsupportedOperationException) {
+                           context.assertEquals(cause.getMessage(), "Method implementation is not provided");
+                       } else {
+                           context.fail("Wrong exception type");
+                       }
+                   }
+                   async.countDown();
                 });
             
             } else {

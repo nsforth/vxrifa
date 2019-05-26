@@ -155,7 +155,9 @@ class ReceiverGenerator {
             }
         }
         
-        registerMB.addStatement("$N = this.$N.eventBus().consumer($N, message -> $N.get(message.body().getSuffix()).handle(message))", consumerField, vertxField, eventBusAddressField, handlersField);
+        registerMB.addStatement("$N = this.$N.eventBus().consumer($N, message -> $N.getOrDefault(message.body().getSuffix(), msg -> msg.reply($T.of(new UnsupportedOperationException(\"Method implementation is not provided\")))).handle(message))", 
+                consumerField, vertxField, eventBusAddressField, handlersField, RIFAReply.class
+        );
 
         registerMB.nextControlFlow("catch ($T ex)", TypeName.get(NoSuchMethodException.class));
         registerMB.addStatement("throw new $T(ex)", TypeName.get(IllegalArgumentException.class));

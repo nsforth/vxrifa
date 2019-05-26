@@ -40,4 +40,6 @@ public interface SenderReceiverInterface {
     
     Future<Void> returnsNullInsteadOfFuture();
     
+    Future<Void> ignoredMethod();
+    
 }
