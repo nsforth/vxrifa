@@ -18,6 +18,7 @@
  */
 package io.github.nsforth.vxrifa;
 
+import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
@@ -58,7 +59,7 @@ class PublisherGenerator {
 
     PublisherGenerator generateInitializing() {
 
-        tsb = TypeSpec.classBuilder(MessageFormat.format("{0}{1}", interfaceElement.getSimpleName(), VXRIFA_PUBLISHER_SUFFIX)).addModifiers(Modifier.PUBLIC);
+        tsb = GeneratorsHelper.generateClass(interfaceElement, VXRIFA_PUBLISHER_SUFFIX);
 
         tsb.addSuperinterface(TypeName.get(interfaceElement.asType()));
 

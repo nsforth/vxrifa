@@ -66,7 +66,7 @@ class SenderGenerator {
 
     SenderGenerator generateInitializing() {
 
-        classBuilder = TypeSpec.classBuilder(MessageFormat.format("{0}{1}", interfaceElement.getSimpleName(), VXRIFA_SENDER_SUFFIX)).addModifiers(Modifier.PUBLIC);
+        classBuilder = GeneratorsHelper.generateClass(interfaceElement, VXRIFA_SENDER_SUFFIX);
 
         classBuilder.addSuperinterface(TypeName.get(interfaceElement.asType()));
 

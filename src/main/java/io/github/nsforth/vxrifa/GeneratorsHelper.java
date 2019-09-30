@@ -18,10 +18,15 @@
  */
 package io.github.nsforth.vxrifa;
 
+import com.squareup.javapoet.AnnotationSpec;
+import com.squareup.javapoet.TypeSpec;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 
 /**
  *
@@ -43,6 +48,18 @@ class GeneratorsHelper {
         
         return true;
         
+    }
+    
+    static TypeSpec.Builder generateClass(TypeElement interfaceElement, String suffix) {
+        
+        return TypeSpec.classBuilder(String.format("%s%s", interfaceElement.getSimpleName(), suffix))
+                .addModifiers(Modifier.PUBLIC)
+                .addAnnotation(
+                        AnnotationSpec.builder(javax.annotation.Generated.class)
+                            .addMember("value", "$S", GeneratorsHelper.class.getPackage().getName())
+                            .addMember("date", "$S", DateTimeFormatter.ISO_DATE.format(LocalDate.now()))
+                        .build()
+                );
     }
     
 }

@@ -72,12 +72,14 @@ public class VxRifaAnnotationProcessor extends AbstractProcessor {
         }
 
         for (Element element : senders_elements) {
-            
+
             if (isNotInterfaceElement(element)) continue;
             
             TypeElement interfaceElement = (TypeElement) element;
             PackageElement packageElement = (PackageElement) interfaceElement.getEnclosingElement();
 
+            if (hasNoMethodsAtAll(interfaceElement)) continue;
+            
             try {
 
                 generateSender(interfaceElement, packageElement);                
@@ -96,6 +98,8 @@ public class VxRifaAnnotationProcessor extends AbstractProcessor {
             TypeElement interfaceElement = (TypeElement) element;
             PackageElement packageElement = (PackageElement) interfaceElement.getEnclosingElement();
 
+            if (hasNoMethodsAtAll(interfaceElement)) continue;
+            
             try {
 
                 generatePublisher(interfaceElement, packageElement);                
@@ -120,6 +124,15 @@ public class VxRifaAnnotationProcessor extends AbstractProcessor {
         
         return false;
     
+    }
+    
+    private boolean hasNoMethodsAtAll(TypeElement interfaceElement) {
+        for (Element enclosedElement : elements.getAllMembers(interfaceElement)) {
+            if (GeneratorsHelper.isElementSuitableMethod(enclosedElement)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void generateSender(TypeElement interfaceElement, PackageElement packageElement) throws IOException {

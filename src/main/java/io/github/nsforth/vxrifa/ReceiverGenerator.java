@@ -72,7 +72,7 @@ class ReceiverGenerator {
 
     ReceiverGenerator generateInitializing() {
 
-        tsb = TypeSpec.classBuilder(MessageFormat.format("{0}{1}", interfaceElement.getSimpleName(), VXRIFA_RECEIVER_SUFFIX)).addModifiers(Modifier.PUBLIC);
+        tsb = GeneratorsHelper.generateClass(interfaceElement, VXRIFA_RECEIVER_SUFFIX);
 
         tsb.addSuperinterface(ParameterizedTypeName.get(ClassName.get(VxRifaReceiver.class), TypeName.get(interfaceElement.asType())));
 
