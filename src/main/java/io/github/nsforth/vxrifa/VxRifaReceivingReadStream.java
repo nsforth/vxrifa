@@ -97,6 +97,7 @@ public class VxRifaReceivingReadStream<T> implements ReadStream<T> {
         return this;
     }
 
+    @SuppressWarnings("unchecked")
     private void processDataMessage(RIFAMessage rifaMessage) {
         receivedCounter++;
         String messageType = rifaMessage.getSuffix();

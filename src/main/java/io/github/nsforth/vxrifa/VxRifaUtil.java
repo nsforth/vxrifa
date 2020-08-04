@@ -19,6 +19,7 @@
 package io.github.nsforth.vxrifa;
 
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import java.lang.reflect.InvocationTargetException;
 
@@ -63,7 +64,8 @@ public class VxRifaUtil {
     public static <I> I getSenderByInterface(Vertx vertx, Class<I> interfaceType, String eventBusAddress) throws IllegalArgumentException {        
         return instantiateSenderImplementation(vertx, interfaceType, eventBusAddress);
     }
-    
+
+    @SuppressWarnings("unchecked")
     private static <I> I instantiateSenderImplementation(Vertx vertx, Class<I> interfaceType, String eventBusAddress) {
         assert interfaceType.isInterface();        
         try {
@@ -111,7 +113,8 @@ public class VxRifaUtil {
     public static <I> I getPublisherByInterface(Vertx vertx, Class<I> interfaceType, String eventBusAddress) throws IllegalArgumentException {        
         return instantiatePublisherImplementation(vertx, interfaceType, eventBusAddress);
     }
-    
+
+    @SuppressWarnings("unchecked")
     private static <I> I instantiatePublisherImplementation(Vertx vertx, Class<I> interfaceType, String eventBusAddress) {
         assert interfaceType.isInterface();        
         try {
@@ -153,18 +156,18 @@ public class VxRifaUtil {
      * @return Future that on completion returns successfully registered {@link VxRifaReceiver} and fails otherwise
      */
     public static <I> Future<VxRifaReceiver<I>> registerReceiver(Vertx vertx, Class<I> interfaceType, I receiver) {
-        Future<VxRifaReceiver<I>> future = Future.future();
+        Promise<VxRifaReceiver<I>> promise = Promise.promise();
         
         VxRifaReceiver<I> receiverRegistrator = getReceiverRegistrator(vertx, interfaceType);
-        receiverRegistrator.registerReceiver(receiver).setHandler(complete -> {
+        receiverRegistrator.registerReceiver(receiver).onComplete(complete -> {
             if (complete.succeeded()) {
-                future.complete(receiverRegistrator);
+                promise.complete(receiverRegistrator);
             } else {
-                future.fail(complete.cause());
+                promise.fail(complete.cause());
             }
         });
         
-        return future;
+        return promise.future();
     }
     
     /**
@@ -189,20 +192,21 @@ public class VxRifaUtil {
      * @return Future that on completion returns successfully registered {@link VxRifaReceiver} and fails otherwise
      */
     public static <I> Future<VxRifaReceiver<I>> registerReceiver(Vertx vertx, Class<I> interfaceType, I receiver, String eventBusAddress) {
-        Future<VxRifaReceiver<I>> future = Future.future();
+        Promise<VxRifaReceiver<I>> promise = Promise.promise();
         
         VxRifaReceiver<I> receiverRegistrator = getReceiverRegistrator(vertx, interfaceType, eventBusAddress);
-        receiverRegistrator.registerReceiver(receiver).setHandler(complete -> {
+        receiverRegistrator.registerReceiver(receiver).onComplete(complete -> {
             if (complete.succeeded()) {
-                future.complete(receiverRegistrator);
+                promise.complete(receiverRegistrator);
             } else {
-                future.fail(complete.cause());
+                promise.fail(complete.cause());
             }
         });
         
-        return future;
+        return promise.future();
     }
-    
+
+    @SuppressWarnings("unchecked")
     private static <I> VxRifaReceiver<I> instantiateReceiverRegistrator(Vertx vertx, Class<I> interfaceType, String eventBusAddress) {
         assert interfaceType.isInterface();        
         try {

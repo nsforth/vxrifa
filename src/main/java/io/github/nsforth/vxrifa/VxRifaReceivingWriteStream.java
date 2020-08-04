@@ -58,6 +58,7 @@ public class VxRifaReceivingWriteStream<T> {
         });
     }
 
+    @SuppressWarnings("unchecked")
     private void processDataMessage(RIFAMessage rifaMessage) {
         String messageType = rifaMessage.getSuffix();
         switch (messageType) {
