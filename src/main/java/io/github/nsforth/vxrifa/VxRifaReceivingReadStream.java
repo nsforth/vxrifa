@@ -51,7 +51,7 @@ public class VxRifaReceivingReadStream<T> implements ReadStream<T> {
             if (result.failed()) {
                 closeExceptionally(result.cause());
             } else {
-                vertx.eventBus().send(remoteAddress, params, new DeliveryOptions().addHeader("DataAddress", dataAddress), reply -> {
+                vertx.eventBus().request(remoteAddress, params, new DeliveryOptions().addHeader("DataAddress", dataAddress), reply -> {
                     if (reply.succeeded()) {
                         RIFAReply rifaReply = (RIFAReply) reply.result().body();
                         if (rifaReply.isExceptional()) {

@@ -16,6 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.streams.WriteStream;
 import io.vertx.ext.unit.Async;
@@ -48,8 +49,32 @@ public class StringsConsumer implements WriteStream<String> {
     }
 
     @Override
+    public WriteStream<String> write(String data, Handler<AsyncResult<Void>> handler) {
+        sb.append(data);
+        async.countDown();
+        handler.handle(null);
+        return this;
+    }
+
+    @Override
     public void end() {
         if (sb.toString().equals("123")) {                        
+            async.countDown();
+        }
+    }
+
+    @Override
+    public void end(Handler<AsyncResult<Void>> handler) {
+        if (sb.toString().equals("123")) {
+            async.countDown();
+        }
+        handler.handle(null);
+    }
+
+    @Override
+    public void end(String s) {
+        this.write(s);
+        if (sb.toString().equals("123")) {
             async.countDown();
         }
     }

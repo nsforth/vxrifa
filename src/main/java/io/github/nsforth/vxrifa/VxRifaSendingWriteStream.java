@@ -18,6 +18,7 @@
  */
 package io.github.nsforth.vxrifa;
 
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
@@ -48,7 +49,7 @@ public class VxRifaSendingWriteStream<T> implements WriteStream<T> {
             if (result.failed()) {
                 closeExceptionally(result.cause());
             } else {
-                vertx.eventBus().send(remoteAddress, params, new DeliveryOptions().addHeader("ControlAddress", controlAddress), reply -> {
+                vertx.eventBus().request(remoteAddress, params, new DeliveryOptions().addHeader("ControlAddress", controlAddress), reply -> {
                     if (reply.succeeded()) {
                         RIFAReply rifaReply = (RIFAReply) reply.result().body();
                         if (rifaReply.isExceptional()) {
@@ -75,12 +76,31 @@ public class VxRifaSendingWriteStream<T> implements WriteStream<T> {
         vertx.eventBus().send(dataAddress, RIFAMessage.of("Data", data));
         return this;
     }
+
+    @Override
+    public WriteStream<T> write(T data, Handler<AsyncResult<Void>> handler) {
+        checkDataAddress();
+        sentCounter++;
+        vertx.eventBus().request(dataAddress, RIFAMessage.of("Data", data), (e) -> {
+            handler.handle(null);
+        });
+        return this;
+    }
     
     @Override
     public void end() {
         checkDataAddress();
         controlConsumer.unregister();
         vertx.eventBus().send(dataAddress, RIFAMessage.of("End"));
+    }
+
+    @Override
+    public void end(Handler<AsyncResult<Void>> handler) {
+        checkDataAddress();
+        controlConsumer.unregister();
+        vertx.eventBus().request(dataAddress, RIFAMessage.of("End"), (e) -> {
+            handler.handle(null);
+        });
     }
     
     @Override

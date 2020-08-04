@@ -35,7 +35,7 @@ public class VxRifaReceivingWriteStream<T> {
     private final ReadStream<RIFAMessage> dataStream;
     private final WriteStream<T> writeStream;
     private final String controlAddress;     
-    private long receivedConter;
+    private long receivedCounter;
 
     public VxRifaReceivingWriteStream(Vertx vertx, String dataAddress, String controlAddress, Message<RIFAMessage> controlReply, WriteStream<T> writeStream) {
         this.vertx = vertx;
@@ -62,7 +62,7 @@ public class VxRifaReceivingWriteStream<T> {
         String messageType = rifaMessage.getSuffix();
         switch (messageType) {
             case "Data":
-                receivedConter++;
+                receivedCounter++;
                 writeStream.write((T) rifaMessage.getParameter(0));
                 if (writeStream.writeQueueFull()) {
                     dataStream.pause();
@@ -74,7 +74,7 @@ public class VxRifaReceivingWriteStream<T> {
                     dataStream.pause();
                 } else {
                     dataStream.resume();
-                    vertx.eventBus().send(controlAddress, RIFAMessage.of("Ack", receivedConter));
+                    vertx.eventBus().send(controlAddress, RIFAMessage.of("Ack", receivedCounter));
                 }
                 break;
             case "End":
@@ -86,7 +86,7 @@ public class VxRifaReceivingWriteStream<T> {
 
     private void drainHandler() {
         this.dataStream.resume();
-        vertx.eventBus().send(controlAddress, RIFAMessage.of("Ack", receivedConter));
+        vertx.eventBus().send(controlAddress, RIFAMessage.of("Ack", receivedCounter));
     }
 
     private void excHandler(Throwable ex) {

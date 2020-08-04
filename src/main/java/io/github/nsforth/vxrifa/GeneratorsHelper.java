@@ -55,7 +55,7 @@ class GeneratorsHelper {
         return TypeSpec.classBuilder(String.format("%s%s", interfaceElement.getSimpleName(), suffix))
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(
-                        AnnotationSpec.builder(javax.annotation.Generated.class)
+                        AnnotationSpec.builder(javax.annotation.processing.Generated.class)
                             .addMember("value", "$S", GeneratorsHelper.class.getPackage().getName())
                             .addMember("date", "$S", DateTimeFormatter.ISO_DATE.format(LocalDate.now()))
                         .build()
