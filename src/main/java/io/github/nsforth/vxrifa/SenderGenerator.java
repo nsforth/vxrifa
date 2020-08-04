@@ -27,6 +27,8 @@ import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import com.squareup.javapoet.TypeVariableName;
+import io.vertx.core.Promise;
+
 import java.text.MessageFormat;
 import javax.annotation.processing.Messager;
 import javax.lang.model.element.Element;
@@ -140,11 +142,13 @@ class SenderGenerator {
                     methodBuilder.addStatement("String remoteAddress = $N", eventBusAddressField);
                     methodBuilder.addStatement("return new $T<>($N, controlAddress, remoteAddress, $T.of($S, $N))", VxRifaSendingWriteStream.class, vertxField, RIFAMessage.class, methodsHelper.generateEventBusSuffix(), methodsHelper.getParamsNamesCommaSeparatedOrCastedNull());
                 } else {
-                    methodBuilder.addStatement("$T future = $T.future()", TypeName.get(returnType), io.vertx.core.Future.class);
-                    methodBuilder.addStatement("this.$N.eventBus().send($N, $T.of($S, $N), result -> handle(future,result))",
+                    ParameterizedTypeName parameterizedTypeName = (ParameterizedTypeName) ParameterizedTypeName.get(returnType);
+                    TypeName[] typeNames = parameterizedTypeName.typeArguments.toArray(new TypeName[0]);
+                    methodBuilder.addStatement("$T promise = $T.promise()", ParameterizedTypeName.get(ClassName.get(io.vertx.core.Promise.class), typeNames), Promise.class);
+                    methodBuilder.addStatement("this.$N.eventBus().request($N, $T.of($S, $N), result -> handle(promise,result))",
                             vertxField, eventBusAddressField, RIFAMessage.class, methodsHelper.generateEventBusSuffix(), methodsHelper.getParamsNamesCommaSeparatedOrCastedNull()
                     );
-                    methodBuilder.addStatement("return future");
+                    methodBuilder.addStatement("return promise.future()");
                 }
 
                 methodBuilder.addAnnotation(Override.class);
@@ -169,23 +173,23 @@ class SenderGenerator {
                 .addTypeVariable(Tvariable)
                 .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class).addMember("value", "$S", "unchecked").build());
 
-        ParameterSpec futureParameter = ParameterSpec.builder(ParameterizedTypeName.get(ClassName.get(io.vertx.core.Future.class), Tvariable), "future").build();
+        ParameterSpec promiseParameter = ParameterSpec.builder(ParameterizedTypeName.get(ClassName.get(io.vertx.core.Promise.class), Tvariable), "promise").build();
         ParameterSpec asyncResultParameter = ParameterSpec.builder(
                 ParameterizedTypeName.get(ClassName.get(io.vertx.core.AsyncResult.class),
                         ParameterizedTypeName.get(ClassName.get(io.vertx.core.eventbus.Message.class), TypeName.get(Object.class))),
                 "asyncResult").build();
 
-        handlerBuilder.addParameter(futureParameter)
+        handlerBuilder.addParameter(promiseParameter)
                 .addParameter(asyncResultParameter)
                 .beginControlFlow("if ($N.succeeded())", asyncResultParameter)
                 .addStatement("$T reply = ($T) $N.result().body()", RIFAReply.class, RIFAReply.class, asyncResultParameter)
                 .beginControlFlow("if (reply.isExceptional())")
-                .addStatement("$N.fail(reply.getException())", futureParameter)
+                .addStatement("$N.fail(reply.getException())", promiseParameter)
                 .nextControlFlow("else")
-                .addStatement("$N.complete(($T) reply.getResult())", futureParameter, Tvariable)
+                .addStatement("$N.complete(($T) reply.getResult())", promiseParameter, Tvariable)
                 .endControlFlow()
                 .nextControlFlow("else")
-                .addStatement("$N.fail($N.cause().getMessage())", futureParameter, asyncResultParameter)
+                .addStatement("$N.fail($N.cause().getMessage())", promiseParameter, asyncResultParameter)
                 .endControlFlow()
                 .returns(TypeName.VOID);
 

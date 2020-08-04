@@ -20,6 +20,7 @@ import io.github.nsforth.vxrifa.VxRifaReceiver;
 import io.github.nsforth.vxrifa.VxRifaUtil;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.streams.ReadStream;
 import io.vertx.core.streams.WriteStream;
 import io.vertx.ext.unit.Async;
@@ -37,9 +38,11 @@ class StreamOfStringsService extends AbstractVerticle implements StreamService {
     }
 
     @Override
-    public void start(Future<Void> startFuture) throws Exception {
+    public void start(Promise<Void> startPromise) throws Exception {
         Future<VxRifaReceiver<StreamService>> registerReceiver = VxRifaUtil.registerReceiver(vertx, StreamService.class, this);        
-        registerReceiver.setHandler(result -> startFuture.complete());   
+        registerReceiver
+                .onSuccess(result -> startPromise.complete())
+                .onFailure(e -> startPromise.fail(e));
     }
 
     @Override

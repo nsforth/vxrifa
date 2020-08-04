@@ -22,6 +22,7 @@ import io.github.nsforth.vxrifa.VxRifaReceiver;
 import io.github.nsforth.vxrifa.VxRifaUtil;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.RunTestOnContext;
@@ -48,15 +49,11 @@ public class TestSimpleSender {
         volatile String param2;
         
         @Override
-        public void start(Future<Void> startFuture) throws Exception {
+        public void start(Promise<Void> startPromise) throws Exception {
             Future<VxRifaReceiver<SenderReceiverInterface>> registerReceiver = VxRifaUtil.registerReceiver(rule.vertx(), SenderReceiverInterface.class, this);
-            registerReceiver.setHandler(handler -> {
-                if (handler.succeeded()) {
-                    startFuture.complete();
-                } else {
-                    startFuture.fail(handler.cause());
-                }
-            });
+            registerReceiver
+                    .onSuccess(r -> startPromise.complete())
+                    .onFailure(e -> startPromise.fail(e));
         }
 
         @Override
@@ -66,9 +63,9 @@ public class TestSimpleSender {
 
         @Override
         public Future<String> withoutParams() {
-            Future<String> future = Future.future();
-            future.complete("Passed");
-            return future;
+            Promise<String> promise = Promise.promise();
+            promise.complete("Passed");
+            return promise.future();
         }
 
         @Override
@@ -79,9 +76,9 @@ public class TestSimpleSender {
 
         @Override
         public Future<Integer> withParams(int request) {
-            Future<Integer> future = Future.future();
-            future.complete(request);
-            return future;
+            Promise<Integer> promise = Promise.promise();
+            promise.complete(request);
+            return promise.future();
         }
 
         @Override
@@ -129,7 +126,7 @@ public class TestSimpleSender {
         rule.vertx().deployVerticle(receiverVerticle, deployResult -> {
             if (deployResult.succeeded()) {
                 
-                sender.withoutParams().setHandler(result -> {
+                sender.withoutParams().onComplete(result -> {
                     if (result.succeeded()) {
                         context.assertEquals("Passed", result.result());
                         async.countDown();
@@ -138,7 +135,7 @@ public class TestSimpleSender {
                     }
                 });
                 
-                sender.withParams(123).setHandler(result -> {
+                sender.withParams(123).onComplete(result -> {
                     if (result.succeeded()) {
                         context.assertEquals(123, result.result());
                         async.countDown();
@@ -151,7 +148,7 @@ public class TestSimpleSender {
                 
                 sender.withoutParamsAndReturn();
                 
-                sender.throwsUnexpectedException("UnexpectedErrorTest").setHandler(handler -> {
+                sender.throwsUnexpectedException("UnexpectedErrorTest").onComplete(handler -> {
                    if (handler.failed()) {
                        if (handler.cause() instanceof IllegalStateException) {
                            Throwable cause = handler.cause();
@@ -163,7 +160,7 @@ public class TestSimpleSender {
                    }
                 });
                 
-                sender.returnsNullInsteadOfFuture().setHandler(handler -> {
+                sender.returnsNullInsteadOfFuture().onComplete(handler -> {
                    if (handler.failed()) {
                        if (handler.cause() instanceof AssertionError) {
                            Throwable cause = handler.cause();
@@ -177,7 +174,7 @@ public class TestSimpleSender {
                    }                    
                 });
                 
-                sender.ignoredMethod().setHandler(handler -> {
+                sender.ignoredMethod().onComplete(handler -> {
                    if (handler.succeeded()) {
                        context.fail("Should catch exception");
                    } else {

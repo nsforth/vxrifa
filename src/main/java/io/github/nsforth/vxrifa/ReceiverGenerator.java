@@ -29,6 +29,7 @@ import com.squareup.javapoet.TypeSpec;
 import com.squareup.javapoet.WildcardTypeName;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
 import java.text.MessageFormat;
@@ -162,9 +163,9 @@ class ReceiverGenerator {
         registerMB.nextControlFlow("catch ($T ex)", TypeName.get(NoSuchMethodException.class));
         registerMB.addStatement("throw new $T(ex)", TypeName.get(IllegalArgumentException.class));
         registerMB.endControlFlow();
-        registerMB.addStatement("$T future = $T.future()", ParameterizedTypeName.get(ClassName.get(Future.class), TypeName.get(Void.class)), Future.class);
-        registerMB.addStatement("$N.completionHandler(future.completer())", consumerField);
-        registerMB.addStatement("return future");
+        registerMB.addStatement("$T promise = $T.promise()", ParameterizedTypeName.get(ClassName.get(Promise.class), TypeName.get(Void.class)), Promise.class);
+        registerMB.addStatement("$N.completionHandler(promise)", consumerField);
+        registerMB.addStatement("return promise.future()");
 
         tsb.addMethod(registerMB.build());
 
@@ -179,9 +180,9 @@ class ReceiverGenerator {
         // Generates cosumers waiting Future for success handler unregistration
         unregisterMB.addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)
-                .addStatement("$T future = $T.future()", ParameterizedTypeName.get(ClassName.get(Future.class), TypeName.get(Void.class)), Future.class)
-                .addStatement("$N.unregister(future.completer())", consumerField)
-                .addStatement("return future")
+                .addStatement("$T promise = $T.promise()", ParameterizedTypeName.get(ClassName.get(Promise.class), TypeName.get(Void.class)), Promise.class)
+                .addStatement("$N.unregister(promise)", consumerField)
+                .addStatement("return promise.future()")
                 .returns(ParameterizedTypeName.get(ClassName.get(Future.class), WildcardTypeName.subtypeOf(Object.class)));
 
         tsb.addMethod(unregisterMB.build());
@@ -250,7 +251,7 @@ class ReceiverGenerator {
                     .beginControlFlow("try")
                     .addStatement("$T returnedFuture = receiver.$L($L)", TypeName.get(method.getReturnType()), method.getSimpleName(), parametersWithCasting.toString())
                     .addStatement("assert returnedFuture != null: \"Returned future should not be null! May be you forget to create appropriate result in $L.$L?\"", method.getEnclosingElement(), method.toString())
-                    .addStatement("returnedFuture.setHandler(result -> {\n$W$L\n})", lambdaBody.build().toString())
+                    .addStatement("returnedFuture.onComplete(result -> {\n$W$L\n})", lambdaBody.build().toString())
                     .nextControlFlow("catch (Throwable ex)")
                     .addStatement("handler.reply($T.of(ex))", RIFAReply.class)
                     .endControlFlow();

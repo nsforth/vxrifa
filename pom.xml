@@ -38,6 +38,10 @@
                 <version>3.8.0</version>
                 <!--<compilerArgument>-proc:none</compilerArgument>-->
                 <configuration>
+                    <compilerArgs>
+                        <arg>-Xlint:deprecation</arg>
+                        <arg>-Xlint:unchecked</arg>
+                    </compilerArgs>
                     <release>11</release>  <!--or <release>10</release>-->
                 </configuration>
                 <executions>                    
