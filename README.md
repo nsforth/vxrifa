@@ -12,7 +12,7 @@ Maven (in your pom.xml):
 <dependency>
   <groupId>io.github.nsforth</groupId>
   <artifactId>vxrifa</artifactId>
-  <version>1.3.0</version>
+  <version>1.4.0</version>
 </dependency>
 ```
 Gradle (in your gradle build.xml):
@@ -89,3 +89,6 @@ VxRifa uses wrapper as container for methods parameters so that wrapper should b
 You should also remember that any parameters and returned objects should be immutable(effectively immutable) or at least thread-safe.
 Currently messaging by VxRifa only possible for local non-clustered Vert.X instances because <tt>RIFAMessageCodec</tt> not supported network encoding/decoding of objects.
 I hope to solve that in near future.
+## Supported Vert.x and Java versions
+Starting from VxRifa 1.4.0 Java 8 is not supported anymore. Vert.X minimum supported version is 3.9
+You can use 1.3.1 and previous versions with Java 8 and Vert.x 3.6
