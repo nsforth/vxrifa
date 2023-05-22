@@ -97,6 +97,15 @@ public class TestSimpleSender {
             return null;
         }
 
+        @Override
+        public Future<Integer> customDeliveryOptionsMethod(String param, int param2) {
+            Promise<Integer> promise = Promise.promise();
+            vertx.setTimer(1000, handler -> {
+                promise.complete(param2);
+            });
+            return promise.future();
+        }
+
     }
 
     @Before
@@ -119,7 +128,7 @@ public class TestSimpleSender {
     @Test(timeout = 3000L)
     public void testReceiverMethods(TestContext context) {
 
-        Async async = context.async(5);
+        Async async = context.async(6);
 
         ReceiverVerticle receiverVerticle = new ReceiverVerticle();
         SenderReceiverInterface sender = VxRifaUtil.getSenderByInterface(rule.vertx(), SenderReceiverInterface.class);
@@ -186,6 +195,18 @@ public class TestSimpleSender {
                        }
                    }
                    async.countDown();
+                });
+
+                sender.customDeliveryOptionsMethod("hello", 123).onComplete(handler -> {
+                    if(handler.succeeded()) {
+                        context.fail("Should catch exception by timeout");
+                    } else {
+                        Throwable cause = handler.cause();
+                        if ( cause instanceof io.vertx.core.impl.NoStackTraceThrowable ) {
+                            System.out.println(cause);
+                        }
+                    }
+                    async.countDown();
                 });
             
             } else {
