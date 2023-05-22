@@ -23,6 +23,7 @@ import io.github.nsforth.vxrifa.VxRifaUtil;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.RunTestOnContext;
@@ -202,9 +203,7 @@ public class TestSimpleSender {
                         context.fail("Should catch exception by timeout");
                     } else {
                         Throwable cause = handler.cause();
-                        if ( cause instanceof io.vertx.core.impl.NoStackTraceThrowable ) {
-                            System.out.println(cause);
-                        }
+                        context.assertTrue(cause instanceof io.vertx.core.impl.NoStackTraceThrowable);
                     }
                     async.countDown();
                 });
