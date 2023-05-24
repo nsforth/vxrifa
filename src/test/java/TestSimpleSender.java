@@ -23,6 +23,7 @@ import io.github.nsforth.vxrifa.VxRifaUtil;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.RunTestOnContext;
@@ -97,6 +98,15 @@ public class TestSimpleSender {
             return null;
         }
 
+        @Override
+        public Future<Integer> customDeliveryOptionsMethod(String param, int param2) {
+            Promise<Integer> promise = Promise.promise();
+            vertx.setTimer(1000, handler -> {
+                promise.complete(param2);
+            });
+            return promise.future();
+        }
+
     }
 
     @Before
@@ -119,7 +129,7 @@ public class TestSimpleSender {
     @Test(timeout = 3000L)
     public void testReceiverMethods(TestContext context) {
 
-        Async async = context.async(5);
+        Async async = context.async(6);
 
         ReceiverVerticle receiverVerticle = new ReceiverVerticle();
         SenderReceiverInterface sender = VxRifaUtil.getSenderByInterface(rule.vertx(), SenderReceiverInterface.class);
@@ -186,6 +196,16 @@ public class TestSimpleSender {
                        }
                    }
                    async.countDown();
+                });
+
+                sender.customDeliveryOptionsMethod("hello", 123).onComplete(handler -> {
+                    if(handler.succeeded()) {
+                        context.fail("Should catch exception by timeout");
+                    } else {
+                        Throwable cause = handler.cause();
+                        context.assertTrue(cause instanceof io.vertx.core.impl.NoStackTraceThrowable);
+                    }
+                    async.countDown();
                 });
             
             } else {

@@ -18,18 +18,10 @@
  */
 package io.github.nsforth.vxrifa;
 
-import com.squareup.javapoet.AnnotationSpec;
-import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.FieldSpec;
-import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.ParameterSpec;
-import com.squareup.javapoet.ParameterizedTypeName;
-import com.squareup.javapoet.TypeName;
-import com.squareup.javapoet.TypeSpec;
-import com.squareup.javapoet.TypeVariableName;
+import com.squareup.javapoet.*;
 import io.vertx.core.Promise;
+import io.vertx.core.eventbus.DeliveryOptions;
 
-import java.text.MessageFormat;
 import javax.annotation.processing.Messager;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -131,8 +123,15 @@ class SenderGenerator {
 
                 methodsHelper.getParameters().forEach(param -> methodBuilder.addParameter(param));
 
+                VxRifaDeliveryOptions deliveryOptionsAnnotation = method.getAnnotation(VxRifaDeliveryOptions.class);
+
                 if (returnType.getKind() == TypeKind.VOID) {
-                    methodBuilder.addStatement("this.$N.eventBus().send($N, $T.of($S, $N))", vertxField, eventBusAddressField, RIFAMessage.class, methodsHelper.generateEventBusSuffix(), methodsHelper.getParamsNamesCommaSeparatedOrCastedNull());
+                    if (deliveryOptionsAnnotation != null) {
+                        methodBuilder.addStatement("$T deliveryOptions = new $T().setSendTimeout($L)", DeliveryOptions.class, DeliveryOptions.class, deliveryOptionsAnnotation.timeout());
+                    } else {
+                        methodBuilder.addStatement("$T deliveryOptions = new $T()", DeliveryOptions.class, DeliveryOptions.class);
+                    }
+                    methodBuilder.addStatement("this.$N.eventBus().send($N, $T.of($S, $N), deliveryOptions)", vertxField, eventBusAddressField, RIFAMessage.class, methodsHelper.generateEventBusSuffix(), methodsHelper.getParamsNamesCommaSeparatedOrCastedNull());
                 } else if (returnType.toString().startsWith(io.vertx.core.streams.ReadStream.class.getCanonicalName())) {
                     methodBuilder.addStatement("String dataAddress = $N + Long.toHexString(java.util.concurrent.ThreadLocalRandom.current().nextLong())", eventBusAddressField);
                     methodBuilder.addStatement("String remoteAddress = $N", eventBusAddressField);
@@ -145,7 +144,12 @@ class SenderGenerator {
                     ParameterizedTypeName parameterizedTypeName = (ParameterizedTypeName) ParameterizedTypeName.get(returnType);
                     TypeName[] typeNames = parameterizedTypeName.typeArguments.toArray(new TypeName[0]);
                     methodBuilder.addStatement("$T promise = $T.promise()", ParameterizedTypeName.get(ClassName.get(io.vertx.core.Promise.class), typeNames), Promise.class);
-                    methodBuilder.addStatement("this.$N.eventBus().request($N, $T.of($S, $N), result -> handle(promise,result))",
+                    if (deliveryOptionsAnnotation != null) {
+                        methodBuilder.addStatement("$T deliveryOptions = new $T().setSendTimeout($L)", DeliveryOptions.class, DeliveryOptions.class, deliveryOptionsAnnotation.timeout());
+                    } else {
+                        methodBuilder.addStatement("$T deliveryOptions = new $T()", DeliveryOptions.class, DeliveryOptions.class);
+                    }
+                    methodBuilder.addStatement("this.$N.eventBus().request($N, $T.of($S, $N), deliveryOptions, result -> handle(promise,result))",
                             vertxField, eventBusAddressField, RIFAMessage.class, methodsHelper.generateEventBusSuffix(), methodsHelper.getParamsNamesCommaSeparatedOrCastedNull()
                     );
                     methodBuilder.addStatement("return promise.future()");

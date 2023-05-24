@@ -19,6 +19,7 @@
 
 
 import io.github.nsforth.vxrifa.VxRifa;
+import io.github.nsforth.vxrifa.VxRifaDeliveryOptions;
 import io.vertx.core.Future;
 
 /**
@@ -41,5 +42,7 @@ public interface SenderReceiverInterface {
     Future<Void> returnsNullInsteadOfFuture();
     
     Future<Void> ignoredMethod();
-    
+
+    @VxRifaDeliveryOptions(timeout = 500)
+    Future<Integer> customDeliveryOptionsMethod(String param, int param2);
 }
