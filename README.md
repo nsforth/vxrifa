@@ -12,13 +12,13 @@ Maven (in your pom.xml):
 <dependency>
   <groupId>io.github.nsforth</groupId>
   <artifactId>vxrifa</artifactId>
-  <version>1.4.0</version>
+  <version>1.4.1</version>
 </dependency>
 ```
 Gradle (in your gradle build.xml):
 ```
 dependencies {
-  compile 'io.github.nsforth:vxrifa:1.3.0'
+  compile 'io.github.nsforth:vxrifa:1.4.1'
 }
 ```
 Any interface can be annotated with <tt>@VxRifa</tt>. Methods should return one of void, <tt>io.vertx.core.Future</tt>, <tt>io.vertx.core.streams.ReadStream</tt>, <tt>io.vertx.core.streams.WriteStream</tt>.
