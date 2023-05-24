@@ -1,3 +1,4 @@
+package io.github.nsforth.vxrifa.test;
 /*
  * Copyright (C) 2017 Nikita Staroverov.
  *

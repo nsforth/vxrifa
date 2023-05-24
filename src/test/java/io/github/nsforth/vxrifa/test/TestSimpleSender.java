@@ -1,3 +1,4 @@
+package io.github.nsforth.vxrifa.test;
 /*
  * Copyright (C) 2017 Nikita Staroverov.
  *
@@ -23,7 +24,6 @@ import io.github.nsforth.vxrifa.VxRifaUtil;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.RunTestOnContext;

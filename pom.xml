@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.nsforth</groupId>
     <artifactId>vxrifa</artifactId>
-    <version>1.4.2</version>
+    <version>1.4.3</version>
     <packaging>jar</packaging>
     <name>VxRifa</name>
     <description>Object-oriented reactive programming for Vert.X</description>
@@ -91,6 +91,11 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                  <excludePackageNames>
+                      io.github.nsforth.vxrifa.test
+                  </excludePackageNames>  
+                </configuration>
             </plugin>
         </plugins>
     </build>

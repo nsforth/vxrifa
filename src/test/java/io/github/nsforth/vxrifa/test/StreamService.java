@@ -1,3 +1,4 @@
+package io.github.nsforth.vxrifa.test;
 /*
  * Copyright (C) 2017 Nikita Staroverov.
  *
@@ -16,15 +17,19 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-
-
 import io.github.nsforth.vxrifa.VxRifa;
+import io.vertx.core.streams.ReadStream;
+import io.vertx.core.streams.WriteStream;
 
 /**
  *
- * @author Nikita Staroverov
+ * @author Nikita Staroverov <nstaroverov@rtlservice.com>
  */
 @VxRifa
-public interface NoMethodsInterface {
+public interface StreamService {
+    
+    ReadStream<String> getStreamOfStrings();
+    
+    WriteStream<String> getStringsConsumer();
     
 }

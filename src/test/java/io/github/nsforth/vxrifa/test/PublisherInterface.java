@@ -1,3 +1,4 @@
+package io.github.nsforth.vxrifa.test;
 /*
  * Copyright (C) 2017 Nikita Staroverov.
  *
@@ -18,31 +19,15 @@
  */
 
 
-import io.github.nsforth.vxrifa.VxRifa;
-import io.github.nsforth.vxrifa.VxRifaDeliveryOptions;
-import io.vertx.core.Future;
+import io.github.nsforth.vxrifa.VxRifaPublish;
 
 /**
  *
  * @author Nikita Staroverov
  */
-@VxRifa
-public interface SenderReceiverInterface {
+@VxRifaPublish
+public interface PublisherInterface {
     
-    void withoutParamsAndReturn();
+    void publishMethod();
     
-    Future<String> withoutParams();
-    
-    void withParamsAndWithoutReturn(int param1, String param2);
-    
-    Future<Integer> withParams(int request);
-    
-    Future<Void> throwsUnexpectedException(String text);
-    
-    Future<Void> returnsNullInsteadOfFuture();
-    
-    Future<Void> ignoredMethod();
-
-    @VxRifaDeliveryOptions(timeout = 500)
-    Future<Integer> customDeliveryOptionsMethod(String param, int param2);
 }
